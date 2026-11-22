@@ -516,7 +516,7 @@ window.LibUI = { mount: function(DATA, OV){
     {id:'newb', ic:'🆕', label:'신간안내'},
     {id:'rules', ic:'📋', label:'규칙'}
   ];
-  var state = {tab:'todo', lib:'전체', who:'전체', sfilter:'전체', q:'', limit:24, addOpen:false, selMode:false, sel:{}, copyFallback:''};
+  var state = {tab:'todo', lib:'전체', who:'전체', loanKind:'all', sfilter:'전체', q:'', limit:24, addOpen:false, selMode:false, sel:{}, copyFallback:''};
 
   /* ---------------- 직접 추가·제외 (localStorage 유지) ---------------- */
   var CUSTOM_KEY = 'libdash-custom-series';
@@ -739,14 +739,14 @@ window.LibUI = { mount: function(DATA, OV){
     }).join(' · ');
     var overdue = DATA.overdue || 0;
     var boxes = [
-      {cls:'k due', go:'loans', v:loans.length, unit:'권', l:'현재 대출 중',
+      {cls:'k due', go:'loans', kind:'loan', v:loans.length, unit:'권', l:'현재 대출 중',
        s:(minDue ? ddayLabel(days(minDue)) + ' 임박 · ' + md(minDue) + ' ' + minCount + '건' : '없음')},
-      {cls:'k', go:'loans', v:res.length, unit:'건', l:'예약 중', s:resSub || '없음'},
-      {cls:'k', go:'loans', v:holds.length, unit:'건', l:'상호대차 진행', s:holds.length ? '모두 요청중' : '없음'},
-      {cls:'k ' + (overdue ? 'due' : 'zero'), go:'loans', v:overdue, unit:'건', l:'연체', s:overdue ? '즉시 확인' : '3곳 모두 0건 🎉'}
+      {cls:'k', go:'loans', kind:'reserve', v:res.length, unit:'건', l:'예약 중', s:resSub || '없음'},
+      {cls:'k', go:'loans', kind:'hold', v:holds.length, unit:'건', l:'상호대차 진행', s:holds.length ? '모두 요청중' : '없음'},
+      {cls:'k ' + (overdue ? 'due' : 'zero'), go:'loans', kind:'overdue', v:overdue, unit:'건', l:'연체', s:overdue ? '즉시 확인' : '3곳 모두 0건 🎉'}
     ];
     $('#kpi').innerHTML = boxes.map(function(b){
-      return '<button class="' + b.cls + '" data-go="' + b.go + '">' +
+      return '<button class="' + b.cls + '" data-go="' + b.go + '" data-kind="' + b.kind + '">' +
         (b.cls.indexOf('due') >= 0 ? '<span class="dot"></span>' : '') +
         '<div class="v">' + b.v + '<small>' + b.unit + '</small></div>' +
         '<div class="l">' + b.l + '</div>' +
@@ -754,7 +754,10 @@ window.LibUI = { mount: function(DATA, OV){
     }).join('');
     var btns = $('#kpi').querySelectorAll('[data-go]');
     for(var i=0;i<btns.length;i++){
-      btns[i].addEventListener('click', function(){ setTab(this.getAttribute('data-go')); });
+      btns[i].addEventListener('click', function(){
+        state.loanKind = this.getAttribute('data-kind') || 'all';
+        setTab(this.getAttribute('data-go'));
+      });
     }
   }
 
@@ -773,7 +776,11 @@ window.LibUI = { mount: function(DATA, OV){
     }).join('');
     var btns = $('#tabs').querySelectorAll('[data-tab]');
     for(var i=0;i<btns.length;i++){
-      btns[i].addEventListener('click', function(){ setTab(this.getAttribute('data-tab')); });
+      btns[i].addEventListener('click', function(){
+        var id = this.getAttribute('data-tab');
+        if(id === 'loans') state.loanKind = 'all';
+        setTab(id);
+      });
     }
     syncTabHeight();
   }
@@ -855,6 +862,10 @@ window.LibUI = { mount: function(DATA, OV){
     h += '<div class="frow" style="margin-top:0.35rem">' + whos.map(function(w){
       return '<button class="chipbtn' + (state.who === w ? ' on' : '') + '" data-who="' + w + '">' + w + '</button>';
     }).join('') + '</div>';
+    var kinds = [{k:'all', l:'전체'}, {k:'loan', l:'대출중'}, {k:'reserve', l:'예약'}, {k:'hold', l:'상호대차'}, {k:'overdue', l:'연체'}];
+    h += '<div class="frow" style="margin-top:0.35rem">' + kinds.map(function(x){
+      return '<button class="chipbtn' + (state.loanKind === x.k ? ' on' : '') + '" data-lkind="' + x.k + '">' + x.l + '</button>';
+    }).join('') + '</div>';
     h += '</div>';
     return h;
   }
@@ -872,9 +883,25 @@ window.LibUI = { mount: function(DATA, OV){
       return (a.rank || 9) - (b.rank || 9);
     }).filter(match);
     var holds = DATA.holds.filter(match);
+    var lk = state.loanKind || 'all';
 
     var h = renderFilters();
-    h += '<div class="sec">대출 중 <span class="n">' + loans.length + '</span><span class="hint">반납예정일 순</span></div>';
+    if(lk === 'overdue'){
+      var ov = loans.filter(function(l){ return days(l.due) < 0; });
+      h += '<div class="sec">연체 <span class="n">' + ov.length + '</span><span class="hint">반납예정일 경과</span></div>';
+      h += ov.length ? ov.map(function(l){
+        var n = days(l.due);
+        return rowCard(
+          l.t,
+          libPill(l.lib) +
+            '<span class="dday ' + ddayClass(n) + '">' + ddayLabel(n) + '</span>' +
+            '<span class="tiny">' + mdw(l.due) + ' 반납</span>',
+          '<b>' + esc(l.who) + '</b>' + (l.note ? ' · ' + esc(l.note) : '')
+        );
+      }).join('') : '<div class="empty">연체 중인 도서가 없습니다 🎉</div>';
+    }
+    if(lk === 'all' || lk === 'loan'){
+      h += '<div class="sec">대출 중 <span class="n">' + loans.length + '</span><span class="hint">반납예정일 순</span></div>';
     h += loans.length ? loans.map(function(l){
       var n = days(l.due);
       return rowCard(
@@ -886,7 +913,10 @@ window.LibUI = { mount: function(DATA, OV){
       );
     }).join('') : '<div class="empty">해당 조건의 대출이 없습니다</div>';
 
-    h += '<div class="sec">예약 <span class="n">' + res.length + '</span><span class="hint">1순위가 가장 빠름</span></div>';
+    }
+
+    if(lk === 'all' || lk === 'reserve'){
+      h += '<div class="sec">예약 <span class="n">' + res.length + '</span><span class="hint">1순위가 가장 빠름</span></div>';
     h += res.length ? res.map(function(r){
       var extra = [];
       if(r.since) extra.push(md(r.since) + ' 신청');
@@ -899,7 +929,10 @@ window.LibUI = { mount: function(DATA, OV){
       );
     }).join('') : '<div class="empty">해당 조건의 예약이 없습니다</div>';
 
-    h += '<div class="sec">상호대차 <span class="n">' + holds.length + '</span><span class="hint">도착 문자 후 3일 내 대출</span></div>';
+    }
+
+    if(lk === 'all' || lk === 'hold'){
+      h += '<div class="sec">상호대차 <span class="n">' + holds.length + '</span><span class="hint">도착 문자 후 3일 내 대출</span></div>';
     h += holds.length ? holds.map(function(x){
       return rowCard(
         x.t,
@@ -908,6 +941,7 @@ window.LibUI = { mount: function(DATA, OV){
         x.status + ' · ' + md(x.since) + ' 신청' + (x.note ? ' · ' + x.note : '')
       );
     }).join('') : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
+    }
 
     h += '<div class="sec">계정별 예약 한도</div>';
     h += DATA.limits.map(function(g){
@@ -1240,6 +1274,8 @@ window.LibUI = { mount: function(DATA, OV){
       for(i=0;i<lb.length;i++) lb[i].addEventListener('click', function(){ state.lib = this.getAttribute('data-lib'); render(); });
       var wb = document.querySelectorAll('[data-who]');
       for(i=0;i<wb.length;i++) wb[i].addEventListener('click', function(){ state.who = this.getAttribute('data-who'); render(); });
+      var kb = document.querySelectorAll('[data-lkind]');
+      for(i=0;i<kb.length;i++) kb[i].addEventListener('click', function(){ state.loanKind = this.getAttribute('data-lkind'); render(); });
     }
     if(state.tab === 'series'){
       var sf = document.querySelectorAll('[data-sf]');
