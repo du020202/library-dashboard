@@ -10,17 +10,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="도서관">
 <style>
-  /* 기준: html 폰트 17px = 1rem. 모든 크기를 rem 으로 두어 글씨 크기 조절·화면 배율 보정이 전체에 함께 적용된다. */
+  /* 기준: html 폰트 14.5px = 1rem. 모든 크기를 rem 으로 두어 글씨 크기 조절·화면 배율 보정이 전체에 함께 적용된다.
+     폰(S24급 360~412px)에서 상단이 화면을 덮지 않도록 기본 글씨를 한 단계 낮췄다 — 가- / 가+ 로 언제든 조절. */
   html{
     --z:1;                        /* 넓게 잡힌 뷰포트 보정 배율 (JS가 채움) */
-    --tabh:4.7rem;                /* 탭 바 높이 (JS가 실측해 갱신) */
-    font-size:calc(17px * var(--z));
+    --fs:14.5px;                  /* 기본 글씨 (모바일) */
+    --tabh:3.2rem;                /* 탭 바 높이 (JS가 실측해 갱신) */
+    font-size:calc(var(--fs) * var(--z));
     -webkit-text-size-adjust:100%;
     text-size-adjust:100%;
   }
-  html[data-fs="1"]{font-size:calc(19px * var(--z))}
-  html[data-fs="2"]{font-size:calc(21px * var(--z))}
-  html[data-fs="3"]{font-size:calc(23px * var(--z))}
+  html[data-fs="1"]{--fs:15.6px}
+  html[data-fs="2"]{--fs:16.8px}
+  html[data-fs="3"]{--fs:18px}
   :root{
     --bg:#0e1116; --bg2:#0a0c10; --card:#161a21; --card2:#1c212a;
     --line:#252b36; --fg:#e9edf4; --muted:#98a3b4; --muted2:#6f7b8d;
@@ -45,72 +47,83 @@
   /* 넓은 화면에서도 4열로 퍼지지 않게 모바일 1열 폭으로 고정 */
   .wrap{max-width:calc(540px * var(--z));margin:0 auto;padding:0 0.82rem}
 
-  /* ---------- header ---------- */
-  header{padding:0.35rem 0 0.7rem}
+  /* ---------- header : 폰에서는 제목 + 버튼 1줄, 설명 1줄, 조회 바 1줄 ---------- */
+  header{padding:0.4rem 0 0.5rem}
   .htop{display:flex;align-items:center;gap:0.4rem}
-  .eyebrow{flex:1;min-width:0;font-size:0.83rem;letter-spacing:.06em;color:var(--muted2);font-weight:700;line-height:1.35}
-  .hctl{flex:0 0 auto;display:flex;gap:0.3rem}
+  .eyebrow{display:none}
+  .hctl{flex:0 0 auto;display:flex;gap:0.22rem}
   .cbtn{width:2.6rem;height:2.6rem;padding:0;border-radius:50%;border:1px solid var(--line);
     background:var(--card);color:var(--fg);font-size:0.95rem;font-weight:800;font-family:inherit;
     display:flex;align-items:center;justify-content:center;cursor:pointer;line-height:1}
   .cbtn.theme{font-size:1.1rem}
   .cbtn:active{transform:scale(.95)}
   .cbtn:disabled{opacity:.4}
-  h1{margin:0.45rem 0 0;font-size:1.35rem;line-height:1.25;letter-spacing:-.02em;font-weight:850}
-  h1 .em{font-size:1.2rem;margin-right:.12rem}
-  .sub{margin-top:0.3rem;font-size:0.88rem;color:var(--muted);line-height:1.45}
-  .asofrow{display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-top:0.5rem}
-  .asof{display:inline-block;font-size:0.83rem;font-weight:700;color:var(--muted);
-    border:1px solid var(--line);background:var(--card);padding:0.25rem 0.6rem;border-radius:999px}
+  .htop .hctl .cbtn{width:1.95rem;height:1.95rem;font-size:0.8rem}
+  .htop .hctl .cbtn.theme{font-size:0.9rem}
+  h1{margin:0;font-size:1.16rem;line-height:1.25;letter-spacing:-.02em;font-weight:850}
+  .htop h1{flex:1 1 auto;min-width:0;display:flex;align-items:center;gap:0.15rem;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  h1 .em{font-size:1.06rem;margin-right:.05rem}
+  .sub{margin-top:0.12rem;font-size:0.76rem;color:var(--muted);line-height:1.35;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .asofrow{display:flex;align-items:center;gap:0.3rem;flex-wrap:nowrap;margin-top:0.35rem;min-width:0}
+  .asof{display:inline-block;font-size:0.74rem;font-weight:700;color:var(--muted);max-width:100%;
+    border:1px solid var(--line);background:var(--card);padding:0.18rem 0.5rem;border-radius:999px;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .asof b{color:var(--accent);font-weight:800}
-  .rbtn{display:inline-flex;align-items:center;justify-content:center;gap:0.2rem;min-height:2.1rem;
-    padding:0.22rem 0.6rem;border-radius:999px;border:1px solid var(--line);background:var(--card2);
-    color:var(--fg);font-size:0.82rem;font-weight:800;font-family:inherit;cursor:pointer;line-height:1.2}
+  .rbtn{display:inline-flex;align-items:center;justify-content:center;gap:0.2rem;min-height:1.8rem;
+    padding:0.14rem 0.5rem;border-radius:999px;border:1px solid var(--line);background:var(--card2);
+    color:var(--fg);font-size:0.74rem;font-weight:800;font-family:inherit;cursor:pointer;line-height:1.2;
+    white-space:nowrap;flex:0 0 auto}
   .rbtn:active{transform:scale(.97)}
   .rbtn.on{border-color:var(--accent);color:var(--accent)}
 
-  /* ---------- KPI : 화면 폭과 무관하게 항상 2×2 ---------- */
-  .kpi{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem;margin-bottom:0.3rem}
-  .k{border:1px solid var(--line);background:var(--card);border-radius:0.95rem;padding:0.7rem 0.8rem 0.8rem;
-     box-shadow:var(--shadow);cursor:pointer;text-align:left;color:inherit;font:inherit;position:relative;overflow:hidden}
-  .k .v{font-size:1.765rem;font-weight:850;line-height:1.05;letter-spacing:-.02em}
-  .k .v small{font-size:0.824rem;font-weight:700;color:var(--muted);margin-left:0.18rem;letter-spacing:0}
-  .k .l{font-size:0.824rem;color:var(--muted);margin-top:0.2rem;font-weight:600}
-  .k .s{font-size:0.794rem;margin-top:0.35rem;color:var(--accent);font-weight:700;line-height:1.35}
+  /* ---------- KPI : 폰에서는 납작한 4열 1줄 ---------- */
+  .kpi{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0.3rem;margin-bottom:0.25rem}
+  .k{border:1px solid var(--line);background:var(--card);border-radius:0.72rem;padding:0.36rem 0.42rem 0.4rem;
+     box-shadow:var(--shadow);cursor:pointer;text-align:left;color:inherit;font:inherit;position:relative;
+     overflow:hidden;display:flex;flex-direction:column;justify-content:center;min-width:0}
+  .k .v{font-size:1.2rem;font-weight:850;line-height:1.1;letter-spacing:-.02em;order:1;margin-top:0.04rem}
+  .k .v small{font-size:0.62rem;font-weight:700;color:var(--muted);margin-left:0.12rem;letter-spacing:0}
+  .k .l{font-size:0.63rem;color:var(--muted);margin-top:0;font-weight:700;order:0;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .k .s{font-size:0.6rem;margin-top:0.1rem;color:var(--accent);font-weight:700;line-height:1.25;order:2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .k.due{border-color:#7a3345;background:linear-gradient(180deg,#291a20,#161a21)}
   html[data-theme="light"] .k.due{background:linear-gradient(180deg,#fff1f3,#ffffff);border-color:#f6c3cb}
   .k.zero .v{color:var(--good)}
-  .k .dot{position:absolute;right:0.65rem;top:0.7rem;width:0.4rem;height:0.4rem;border-radius:50%;background:var(--bad)}
+  .k .dot{position:absolute;right:0.4rem;top:0.4rem;width:0.3rem;height:0.3rem;border-radius:50%;background:var(--bad)}
 
-  /* ---------- tabs : 540px 폭에서 3열 2줄 ---------- */
-  .tabs{position:sticky;top:0;z-index:30;display:grid;grid-template-columns:repeat(3,1fr);gap:0.32rem;
-    padding:0.55rem 0 0.45rem;margin-top:0.5rem;background:var(--bg)}
-  .tab{min-width:0;min-height:2.9rem;border:1px solid var(--line);background:var(--card);color:var(--muted);
-    border-radius:0.8rem;padding:0.4rem 0.1rem 0.45rem;font-size:0.86rem;font-weight:700;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.08rem;line-height:1.2;font-family:inherit}
-  .tab .ic{font-size:1.15rem;line-height:1.1}
+  /* ---------- tabs : 폰에서는 가로 1줄(넘치면 스크롤) ---------- */
+  .tabs{position:sticky;top:0;z-index:30;display:flex;gap:0.26rem;overflow-x:auto;scrollbar-width:none;
+    padding:0.4rem 0 0.35rem;margin-top:0.35rem;background:var(--bg)}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex:0 0 auto;min-width:0;min-height:2rem;border:1px solid var(--line);background:var(--card);color:var(--muted);
+    border-radius:0.6rem;padding:0.26rem 0.52rem;font-size:0.78rem;font-weight:700;cursor:pointer;
+    display:flex;flex-direction:row;align-items:center;justify-content:center;gap:0.22rem;line-height:1.2;font-family:inherit}
+  .tab .ic{font-size:0.9rem;line-height:1.1}
   .tab.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
 
-  main{padding-top:0.25rem;animation:fade .18s ease}
+  main{padding-top:0.15rem;animation:fade .18s ease}
   @keyframes fade{from{opacity:.4}to{opacity:1}}
 
-  .sec{font-size:0.94rem;font-weight:800;color:var(--muted);letter-spacing:.01em;
-    margin:1.15rem 0 0.45rem;display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;line-height:1.3}
-  .sec:first-child{margin-top:0.6rem}
-  .sec .n{font-size:0.83rem;font-weight:800;background:var(--card2);border:1px solid var(--line);
-    color:var(--muted);border-radius:999px;padding:0.06rem 0.42rem}
-  .sec .hint{margin-left:auto;font-weight:600;font-size:0.83rem;color:var(--muted2);letter-spacing:0}
+  .sec{font-size:0.84rem;font-weight:800;color:var(--muted);letter-spacing:.01em;
+    margin:0.9rem 0 0.35rem;display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;line-height:1.3}
+  .sec:first-child{margin-top:0.4rem}
+  .sec .n{font-size:0.74rem;font-weight:800;background:var(--card2);border:1px solid var(--line);
+    color:var(--muted);border-radius:999px;padding:0.05rem 0.38rem}
+  .sec .hint{margin-left:auto;font-weight:600;font-size:0.74rem;color:var(--muted2);letter-spacing:0}
 
   /* ---------- book cards : 세로로 시원하게 ---------- */
   .row{display:block;background:var(--card);border:1px solid var(--line);
-    border-radius:0.9rem;padding:0.75rem 0.85rem 0.8rem;margin-bottom:0.5rem;box-shadow:var(--shadow)}
-  .row .rtop{display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.4rem}
+    border-radius:0.8rem;padding:0.6rem 0.7rem 0.65rem;margin-bottom:0.45rem;box-shadow:var(--shadow)}
+  .row .rtop{display:flex;align-items:center;gap:0.35rem;flex-wrap:wrap;margin-bottom:0.3rem}
   .row .rleft{display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;flex:1 1 auto;min-width:0}
   .row .rright{display:flex;align-items:center;gap:0.3rem;margin-left:auto;flex:0 0 auto}
-  .row .tt{font-size:1.08rem;font-weight:800;line-height:1.4;letter-spacing:-.01em;overflow-wrap:anywhere}
-  .row .ss{font-size:0.88rem;color:var(--muted);margin-top:0.3rem;line-height:1.5;overflow-wrap:anywhere}
+  .row .tt{font-size:1rem;font-weight:800;line-height:1.4;letter-spacing:-.01em;overflow-wrap:anywhere}
+  .row .ss{font-size:0.82rem;color:var(--muted);margin-top:0.22rem;line-height:1.45;overflow-wrap:anywhere}
   .row .ss b{color:var(--fg);font-weight:800}
-  .row .tiny{font-size:0.85rem;color:var(--muted2);font-weight:700;margin-left:auto;white-space:nowrap}
+  .row .tiny{font-size:0.78rem;color:var(--muted2);font-weight:700;margin-left:auto;white-space:nowrap}
   .exbtn{flex:0 0 auto;min-height:2.4rem;padding:0.3rem 0.65rem;border:1px solid var(--line);background:transparent;
     color:var(--muted2);border-radius:0.55rem;font-size:0.83rem;font-weight:800;font-family:inherit;
     cursor:pointer;line-height:1.2}
@@ -286,6 +299,84 @@
     border:1px solid var(--line);color:var(--muted);white-space:nowrap}
   .availtag.pre{color:#ffc861;border-color:#5c4526;background:#241d13}
   html[data-theme="light"] .availtag.pre{color:#a15b06;border-color:#f6dfc0;background:#fff4e6}
+  /* ---------- PC 넓은 화면 (960px 이상) ---------- */
+  .duegrid{display:block}
+  .todogrid{display:block}
+  .tcol{min-width:0}
+  @media (min-width: 960px){
+    html,html[data-fs="0"]{--fs:15px}
+    html[data-fs="1"]{--fs:16px}
+    html[data-fs="2"]{--fs:17px}
+    html[data-fs="3"]{--fs:18.5px}
+    body{padding-bottom:1.4rem}
+    .wrap{max-width:1380px;padding:0 1.5rem}
+
+    /* 상단 : 브랜드 + 설명 + 실시간 조회 + 버튼 1줄 */
+    header{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;
+      column-gap:1rem;row-gap:0.35rem;padding:0.65rem 0 0.75rem;border-bottom:1px solid var(--line)}
+    .htop{display:contents}
+    .htop h1{grid-column:1;grid-row:1;font-size:1.3rem}
+    h1 .em{font-size:1.15rem}
+    .sub{grid-column:2;grid-row:1;margin:0;font-size:0.8rem;text-align:left}
+    .asofrow{grid-column:3;grid-row:1;margin:0}
+    .asof{font-size:0.8rem;padding:0.24rem 0.6rem}
+    .rbtn{min-height:2rem;font-size:0.8rem;padding:0.2rem 0.65rem}
+    .hctl{grid-column:4;grid-row:1}
+    .htop .hctl .cbtn{width:2.05rem;height:2.05rem;font-size:0.85rem}
+    .htop .hctl .cbtn.theme{font-size:0.95rem}
+    #refreshBox{grid-column:1/-1;grid-row:2}
+
+    /* KPI 4장 가로 1줄 */
+    .kpi{grid-template-columns:repeat(4,minmax(0,1fr));gap:0.6rem;margin:0.7rem 0 0.2rem}
+    .k{padding:0.5rem 0.8rem 0.55rem;border-radius:0.8rem;display:block}
+    .k .l{font-size:0.8rem;order:0}
+    .k .v{font-size:1.5rem;margin-top:0.08rem;order:1}
+    .k .v small{font-size:0.8rem}
+    .k .s{font-size:0.75rem;margin-top:0.12rem;order:2}
+    .k .dot{right:0.7rem;top:0.7rem;width:0.4rem;height:0.4rem}
+
+    /* 탭 6개 가로 1줄 */
+    .tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0.4rem;
+      overflow:visible;margin-top:0.6rem;padding:0.45rem 0 0.4rem}
+    .tab{flex:initial;min-height:2.35rem;font-size:0.86rem;padding:0.3rem 0.5rem;gap:0.35rem;border-radius:0.65rem}
+    .tab .ic{font-size:1rem}
+
+    main{padding-top:0.1rem}
+    .sec{font-size:0.9rem;margin:0.95rem 0 0.45rem}
+    .sec:first-child{margin-top:0.3rem}
+
+    /* 🔥 할 일 : 반납 임박은 위에 최대 6열, 본문은 3단 */
+    .duegrid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0.55rem;align-items:start}
+    .duegrid .row{margin:0;padding:0.55rem 0.6rem 0.6rem;border-radius:0.7rem}
+    .duegrid .row .rtop{gap:0.25rem;margin-bottom:0.3rem}
+    .duegrid .row .tt{font-size:0.9rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;
+      -webkit-box-orient:vertical;overflow:hidden}
+    .duegrid .row .ss{font-size:0.76rem;margin-top:0.16rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .duegrid .dday{font-size:0.76rem;padding:0.12rem 0.42rem}
+    .duegrid .pill{font-size:0.74rem}
+    .duegrid .tiny{font-size:0.74rem}
+    .todogrid{display:grid;grid-template-columns:1.05fr 1fr 1fr;gap:1rem;align-items:start;margin-top:0.15rem}
+    .todogrid .sec:first-child{margin-top:0.55rem}
+    .todogrid .row{padding:0.55rem 0.65rem 0.6rem;margin-bottom:0.4rem}
+    .todogrid .row .tt{font-size:0.95rem}
+    .todogrid .row .ss{font-size:0.8rem;margin-top:0.18rem}
+    .todogrid .row .note{font-size:0.78rem}
+    .todogrid .callout{font-size:0.8rem;padding:0.55rem 0.65rem}
+    .todogrid .empty{padding:0.9rem 0.6rem}
+
+    /* 나머지 탭 : 3열 카드 그리드 */
+    .cardgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.6rem;align-items:start}
+    .cardgrid .row,.cardgrid .ser,.cardgrid .bk{margin-bottom:0}
+    .cardgrid .row{padding:0.65rem 0.75rem 0.7rem}
+    .cardgrid .row .tt{font-size:0.98rem}
+    .cardgrid .ser{padding:0.7rem 0.8rem 0.75rem}
+    .cardgrid .ser .nm{font-size:1rem;-webkit-line-clamp:2}
+    .cardgrid .bk{grid-template-columns:4.5rem 1fr;padding:0.7rem}
+    .cardgrid .bkc{width:4.5rem}
+    #serlist .sec{margin-top:0.15rem}
+    .more{margin-top:0.6rem}
+  }
+
   /* ---------- toast ---------- */
   .toast{position:fixed;left:50%;bottom:1.5rem;transform:translate(-50%,1.4rem);z-index:99;max-width:calc(540px * var(--z) - 2rem);
     background:#1f2632;color:#fff;border:1px solid #33405a;border-radius:0.8rem;padding:0.7rem 0.9rem;
@@ -405,7 +496,7 @@
 <div class="wrap" id="app" hidden>
   <header>
     <div class="htop">
-      <div class="eyebrow" id="eyebrow">위례 3곳 도서관 · 가족 3계정</div>
+      <h1><span class="em">📚</span>도서관 대시보드</h1>
       <div class="hctl">
         <button class="cbtn" id="fsMinus" title="글씨 작게" aria-label="글씨 작게">가−</button>
         <button class="cbtn" id="fsPlus" title="글씨 크게" aria-label="글씨 크게">가+</button>
@@ -414,7 +505,6 @@
         <button class="cbtn" id="lockBtn" title="잠금" aria-label="잠금">🔒</button>
       </div>
     </div>
-    <h1><span class="em">📚</span>도서관 대시보드</h1>
     <div class="sub" id="subline"></div>
     <div class="asofrow">
       <span class="asof">실시간 조회 <b id="asof">—</b></span>
@@ -672,7 +762,7 @@ window.LibUI = { mount: function(DATA, OV){
   /* ---------------- 넓은 뷰포트 보정 ----------------
      폰인데 브라우저가 데스크톱 폭(예: 780~980px)으로 레이아웃하고 화면에 맞춰 축소하면
      글씨가 절반 크기로 보인다. 레이아웃 폭이 기기 폭보다 크면 그 비율만큼 --z 를 키워
-     실제 화면에서 17px 기준 크기가 유지되게 한다. (일반 모바일·데스크톱에서는 --z=1 그대로) */
+     실제 화면에서 14.5px 기준 크기가 유지되게 한다. (일반 모바일·데스크톱에서는 --z=1 그대로) */
   function fitWide(){
     try{
       var de = document.documentElement;
@@ -689,7 +779,7 @@ window.LibUI = { mount: function(DATA, OV){
         z = vw / 430;                                  /* 기기 폭을 알 수 없을 때의 보수적 추정 */
       }
       if(!(z > 1.01)) return;
-      if(z > 2.4) z = 2.4;
+      if(z > 1.9) z = 1.9;
       de.setAttribute('data-fit', '1');
       if(de.style && de.style.setProperty) de.style.setProperty('--z', z.toFixed(3));
       else de.setAttribute('style', '--z:' + z.toFixed(3));
@@ -819,6 +909,7 @@ window.LibUI = { mount: function(DATA, OV){
   function renderTodo(){
     var av = todoVisible(DATA.available), rh = todoVisible(DATA.reserveHere);
     var mo = todoVisible(DATA.monitor);
+    var hd = DATA.holds || [];
     var up = todoVisible(DATA.upcoming).slice().sort(function(a,b){
       var da = a.date || '9999-12-31', db = b.date || '9999-12-31';
       return da < db ? -1 : (da > db ? 1 : 0);
@@ -831,24 +922,46 @@ window.LibUI = { mount: function(DATA, OV){
         '시리즈 탭 <b>제외됨</b> 칩에서 다시 포함할 수 있어요.</div></div>';
     }
     h += '<div class="sec">🔥 반납 임박 <span class="n">' + DATA.returnSoon.length + '</span><span class="hint">연장 불가 우선</span></div>';
-    h += dueRows(DATA.returnSoon);
-    if(DATA.todoNoteHtml) h += '<div class="callout"><span>🗓️</span><div>' + DATA.todoNoteHtml + '</div></div>';
+    h += '<div class="duegrid">' + dueRows(DATA.returnSoon) + '</div>';
 
+    /* 본문 3단 — 폰에서는 세로로 이어지고 PC에서만 3열 */
+    h += '<div class="todogrid">';
+
+    h += '<div class="tcol">';
     h += '<div class="sec">📗 지금 위례에서 바로 빌릴 수 있어요 <span class="n">' + av.length + '</span><span class="hint">성남위례 비치중</span></div>';
     h += av.length ? simpleRows(av, true) : '<div class="empty">표시할 항목이 없습니다</div>';
+
+    h += '<div class="sec">📦 상호대차 진행 <span class="n">' + hd.length + '</span><span class="hint">입수 후 3일 내 대출</span></div>';
+    h += hd.length ? hd.map(function(x){
+      return rowCard(
+        x.t,
+        libPill(x.lib) + '<span class="dday warn">' + esc(x.status) + '</span>',
+        '<b>' + esc(x.who) + '</b> · ' + esc(x.from) + ' → ' + esc(x.to),
+        x.status + ' · ' + md(x.since) + ' 신청' + (x.note ? ' · ' + x.note : '')
+      );
+    }).join('') : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
 
     h += '<div class="sec">📌 위례에서 예약 가능 <span class="n">' + rh.length + '</span></div>';
     h += rh.length ? simpleRows(rh, true) : '<div class="empty">표시할 항목이 없습니다</div>';
 
-    h += '<div class="sec">⏳ 타관 상호대차 대기 <span class="n">' + mo.length + '</span><span class="hint">비치중 되면 신청</span></div>';
-    h += mo.length ? simpleRows(mo, true) : '<div class="empty">표시할 항목이 없습니다</div>';
-
-    h += '<div class="sec">📅 곧 나오는 신간 <span class="n">' + up.length + '</span></div>';
-    h += up.length ? simpleRows(up, true) : '<div class="empty">표시할 항목이 없습니다</div>';
-
+    h += '<div class="sec">🗓️ 이번 주 도서관 안내</div>';
+    if(DATA.todoNoteHtml) h += '<div class="callout"><span>🗓️</span><div>' + DATA.todoNoteHtml + '</div></div>';
     h += '<div class="callout"><span>💡</span><div>' +
       '위례(수령도서관) 소장 책은 상호대차가 안 됩니다. <b>비치중이면 바로 대출</b>, <b>대출중이면 예약</b>이 규칙이에요. ' +
       '타관에만 있으면 <b>비치중이 될 때까지</b> 지켜보다가 신청합니다.</div></div>';
+    h += '</div>';
+
+    h += '<div class="tcol">';
+    h += '<div class="sec">⏳ 타관 상호대차 대기 <span class="n">' + mo.length + '</span><span class="hint">비치중 되면 신청</span></div>';
+    h += mo.length ? simpleRows(mo, true) : '<div class="empty">표시할 항목이 없습니다</div>';
+    h += '</div>';
+
+    h += '<div class="tcol">';
+    h += '<div class="sec">📅 곧 나오는 신간 <span class="n">' + up.length + '</span><span class="hint">출간일 순</span></div>';
+    h += up.length ? simpleRows(up, true) : '<div class="empty">표시할 항목이 없습니다</div>';
+    h += '</div>';
+
+    h += '</div>';
     return h;
   }
 
@@ -893,7 +1006,7 @@ window.LibUI = { mount: function(DATA, OV){
     if(lk === 'overdue'){
       var ov = loans.filter(function(l){ return days(l.due) < 0; });
       h += '<div class="sec">연체 <span class="n">' + ov.length + '</span><span class="hint">반납예정일 경과</span></div>';
-      h += ov.length ? ov.map(function(l){
+      h += ov.length ? '<div class="cardgrid">' + ov.map(function(l){
         var n = days(l.due);
         return rowCard(
           l.t,
@@ -902,11 +1015,11 @@ window.LibUI = { mount: function(DATA, OV){
             '<span class="tiny">' + mdw(l.due) + ' 반납</span>',
           '<b>' + esc(l.who) + '</b>' + (l.note ? ' · ' + esc(l.note) : '')
         );
-      }).join('') : '<div class="empty">연체 중인 도서가 없습니다 🎉</div>';
+      }).join('') + '</div>' : '<div class="empty">연체 중인 도서가 없습니다 🎉</div>';
     }
     if(lk === 'all' || lk === 'loan'){
       h += '<div class="sec">대출 중 <span class="n">' + loans.length + '</span><span class="hint">반납예정일 순</span></div>';
-    h += loans.length ? loans.map(function(l){
+    h += loans.length ? '<div class="cardgrid">' + loans.map(function(l){
       var n = days(l.due);
       return rowCard(
         l.t,
@@ -915,13 +1028,13 @@ window.LibUI = { mount: function(DATA, OV){
           '<span class="tiny">' + mdw(l.due) + ' 반납</span>',
         '<b>' + esc(l.who) + '</b>' + (l.note ? ' · ' + esc(l.note) : '')
       );
-    }).join('') : '<div class="empty">해당 조건의 대출이 없습니다</div>';
+    }).join('') + '</div>' : '<div class="empty">해당 조건의 대출이 없습니다</div>';
 
     }
 
     if(lk === 'all' || lk === 'reserve'){
       h += '<div class="sec">예약 <span class="n">' + res.length + '</span><span class="hint">1순위가 가장 빠름</span></div>';
-    h += res.length ? res.map(function(r){
+    h += res.length ? '<div class="cardgrid">' + res.map(function(r){
       var extra = [];
       if(r.since) extra.push(md(r.since) + ' 신청');
       if(r.until) extra.push('예약만기 ' + md(r.until));
@@ -931,20 +1044,20 @@ window.LibUI = { mount: function(DATA, OV){
         '<b>' + esc(r.who) + '</b>' + (extra.length ? ' · ' + esc(extra.join(' · ')) : ''),
         r.note || ''
       );
-    }).join('') : '<div class="empty">해당 조건의 예약이 없습니다</div>';
+    }).join('') + '</div>' : '<div class="empty">해당 조건의 예약이 없습니다</div>';
 
     }
 
     if(lk === 'all' || lk === 'hold'){
       h += '<div class="sec">상호대차 <span class="n">' + holds.length + '</span><span class="hint">도착 문자 후 3일 내 대출</span></div>';
-    h += holds.length ? holds.map(function(x){
+    h += holds.length ? '<div class="cardgrid">' + holds.map(function(x){
       return rowCard(
         x.t,
-        libPill(x.lib) + '<span class="dday warn">요청중</span>',
+        libPill(x.lib) + '<span class="dday warn">' + esc(x.status) + '</span>',
         '<b>' + esc(x.who) + '</b> · ' + esc(x.from) + ' → ' + esc(x.to),
         x.status + ' · ' + md(x.since) + ' 신청' + (x.note ? ' · ' + x.note : '')
       );
-    }).join('') : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
+    }).join('') + '</div>' : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
     }
 
     h += '<div class="sec">계정별 예약 한도</div>';
@@ -1055,7 +1168,7 @@ window.LibUI = { mount: function(DATA, OV){
       '<div class="line"><span class="lbl">이빠짐</span><span>' + gapChips + '</span></div>' +
       inprog +
       (s.next ? '<div class="note">' + esc(s.next) + '</div>' : '') +
-      '</article>' + foot;
+      foot + '</article>';
   }
   function addFormHtml(){
     return '<div class="addform">' +
@@ -1123,7 +1236,8 @@ window.LibUI = { mount: function(DATA, OV){
     var h = state.sfilter === '제외됨'
       ? '<div class="sec">제외된 시리즈 <span class="n">' + list.length + '</span><span class="hint">다시 포함 가능</span></div>'
       : '<div class="sec">시리즈 <span class="n">' + list.length + '</span><span class="hint">직접 추가 우선</span></div>';
-    h += shown.length ? shown.map(seriesCard).join('') : '<div class="empty">검색 결과가 없습니다</div>';
+    h += shown.length ? '<div class="cardgrid">' + shown.map(seriesCard).join('') + '</div>'
+      : '<div class="empty">검색 결과가 없습니다</div>';
     if(list.length > shown.length){
       h += '<button class="more" id="more">더 보기 (' + shown.length + ' / ' + list.length + ')</button>';
     }
@@ -1274,7 +1388,7 @@ window.LibUI = { mount: function(DATA, OV){
   function fillBookList(boxId, list, kind){
     var box = document.getElementById(boxId);
     if(!box) return;
-    box.innerHTML = list.length ? list.map(function(b){ return bookCard(b, kind); }).join('')
+    box.innerHTML = list.length ? '<div class="cardgrid">' + list.map(function(b){ return bookCard(b, kind); }).join('') + '</div>'
       : '<div class="empty">표시할 책이 없습니다</div>';
   }
   function bind(){
