@@ -1589,6 +1589,7 @@ window.LibUI = { mount: function(DATA, OV){
 
       var app = $('app'); if(app) app.hidden = false;
       var lock = $('lock'); if(lock) lock.classList.add('off');
+      var pe = $('pinInput'); if(pe) pe.value = '';
       setBusy(false);
       S.fails = 0;
       if(getPat() && S.retryPush){ S.retryPush = false; queuePush(ov); }
@@ -1599,6 +1600,7 @@ window.LibUI = { mount: function(DATA, OV){
         showErr('데이터 파일을 불러오지 못했습니다. 잠시 뒤 다시 시도해 주세요.');
       } else if(err && err.wrongPin){
         S.fails++;
+        var pf = $('pinInput'); if(pf){ pf.value = ''; try{ pf.focus(); }catch(e){} }
         if(S.fails >= 5){
           S.lockUntil = Date.now() + 30000;
           showErr('비밀번호가 계속 맞지 않아요. 30초 뒤에 다시 시도해 주세요.');
