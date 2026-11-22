@@ -742,7 +742,7 @@ window.LibUI = { mount: function(DATA, OV){
       {cls:'k due', go:'loans', kind:'loan', v:loans.length, unit:'권', l:'현재 대출 중',
        s:(minDue ? ddayLabel(days(minDue)) + ' 임박 · ' + md(minDue) + ' ' + minCount + '건' : '없음')},
       {cls:'k', go:'loans', kind:'reserve', v:res.length, unit:'건', l:'예약 중', s:resSub || '없음'},
-      {cls:'k', go:'loans', kind:'hold', v:holds.length, unit:'건', l:'상호대차 진행', s:holds.length ? '모두 요청중' : '없음'},
+      {cls:'k', go:'loans', kind:'hold', v:holds.length, unit:'건', l:'상호대차 진행', s:holds.length ? (holds.every(function(x){return x.status==='요청중';}) ? '모두 요청중' : holds.map(function(x){return x.status;}).filter(function(v,i,arr){return arr.indexOf(v)===i;}).join('·')) : '없음'},
       {cls:'k ' + (overdue ? 'due' : 'zero'), go:'loans', kind:'overdue', v:overdue, unit:'건', l:'연체', s:overdue ? '즉시 확인' : '3곳 모두 0건 🎉'}
     ];
     $('#kpi').innerHTML = boxes.map(function(b){
