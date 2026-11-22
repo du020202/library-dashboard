@@ -818,7 +818,11 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function renderTodo(){
     var av = todoVisible(DATA.available), rh = todoVisible(DATA.reserveHere);
-    var mo = todoVisible(DATA.monitor), up = todoVisible(DATA.upcoming);
+    var mo = todoVisible(DATA.monitor);
+    var up = todoVisible(DATA.upcoming).slice().sort(function(a,b){
+      var da = a.date || '9999-12-31', db = b.date || '9999-12-31';
+      return da < db ? -1 : (da > db ? 1 : 0);
+    });
     var hidden = (DATA.available.length - av.length) + (DATA.reserveHere.length - rh.length) +
                  (DATA.monitor.length - mo.length) + (DATA.upcoming.length - up.length);
     var h = '';
@@ -972,7 +976,7 @@ window.LibUI = { mount: function(DATA, OV){
         return findSeries(n) || {name:n, todoOnly:true, status:'할 일 항목', max:0, n:0, vols:[], gaps:[], last:'', loans:0};
       });
     }
-    return src.filter(function(s){
+    var res = src.filter(function(s){
       if(isExcluded(s.name)) return false;
       if(q && s.name.replace(/\s+/g,'').toLowerCase().indexOf(q) < 0) return false;
       if(state.sfilter === '이빠진 권수') return (s.gaps && s.gaps.length) || s.gapNote;
@@ -981,6 +985,20 @@ window.LibUI = { mount: function(DATA, OV){
       if(state.sfilter === '2026 활동') return s.last >= '2026-01';
       return true;
     });
+    if(state.sfilter === '신간 대기'){
+      var pickDate = function(s){
+        var txt = (s.next || '') + ' ' + (s.note || '');
+        var m = txt.match(/(\d{1,2})\/(\d{1,2})/);
+        if(!m) return '99-99';
+        var mm = ('0' + m[1]).slice(-2), dd = ('0' + m[2]).slice(-2);
+        return mm + '-' + dd;
+      };
+      res = res.slice().sort(function(a,b){
+        var da = pickDate(a), db = pickDate(b);
+        return da < db ? -1 : (da > db ? 1 : 0);
+      });
+    }
+    return res;
   }
   function seriesCard(s){
     if(s.todoOnly){
