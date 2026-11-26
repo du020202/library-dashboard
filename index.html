@@ -142,23 +142,28 @@
     background:linear-gradient(135deg,var(--bn1) 0%,var(--bn2) 52%,var(--bn3) 100%);
     box-shadow:var(--shmint)}
   .banner:after{content:"";position:absolute;right:-2.6rem;top:-3.2rem;width:9.4rem;height:9.4rem;border-radius:50%;
-    background:radial-gradient(circle,rgba(16,185,129,.18),rgba(16,185,129,0) 70%)}
+    background:radial-gradient(circle,rgba(16,185,129,.18),rgba(16,185,129,0) 70%);pointer-events:none}
   .bn-top{display:flex;align-items:center;justify-content:space-between;position:relative;gap:0.5rem}
   .bn-badge{font-size:0.8rem;font-weight:900;color:var(--bnAcc);background:var(--bnPill);
     padding:0.28rem 0.62rem;border-radius:999px}
-  .bn-more{font-size:0.8rem;font-weight:800;color:var(--bnAcc);cursor:pointer;white-space:nowrap}
+  .bn-more{font-family:inherit;font-size:0.8rem;font-weight:800;color:var(--bnAcc);cursor:pointer;white-space:nowrap;
+    background:none;border:0;padding:0.1rem 0.15rem}
   .bn-main{display:flex;align-items:flex-end;justify-content:space-between;gap:0.6rem;margin-top:0.55rem;position:relative}
   .bn-title{font-size:1.28rem;font-weight:900;line-height:1.32;color:var(--bnInk);letter-spacing:-.04em}
   .bn-title b{font-size:1.42rem}
   .bn-sub{margin-top:0.3rem;font-size:0.86rem;font-weight:700;color:var(--bnSub);line-height:1.4}
   .bn-sub b{color:var(--bnAcc)}
-  .bn-num{display:flex;flex-direction:column;align-items:flex-end;align-self:center;line-height:1;flex:0 0 auto}
+  .bn-num{display:flex;flex-direction:column;align-items:flex-end;align-self:center;line-height:1;flex:0 0 auto;
+    background:none;border:0;padding:0;font-family:inherit;cursor:pointer;border-radius:0.8rem}
+  .bn-num:active{transform:scale(.96)}
   .bn-num b{font-size:3.1rem;font-weight:900;letter-spacing:-.16rem;color:var(--bnAcc)}
   .bn-num b span{font-size:0.95rem;font-weight:800;letter-spacing:0;margin-left:0.4rem}
   .bn-num em{font-style:normal;font-size:0.72rem;font-weight:800;color:var(--bnSub);margin-top:0.2rem}
   .bn-pills{display:flex;gap:0.35rem;margin-top:0.7rem;flex-wrap:wrap;position:relative}
-  .bp{font-size:0.78rem;font-weight:800;color:var(--bnSub);background:var(--bnPill);
-    border:1px solid var(--bnLine);padding:0.24rem 0.6rem;border-radius:999px;white-space:nowrap}
+  .bp{font-family:inherit;font-size:0.78rem;font-weight:800;color:var(--bnSub);background:var(--bnPill);
+    border:1px solid var(--bnLine);padding:0.24rem 0.6rem;border-radius:999px;white-space:nowrap;
+    cursor:pointer;line-height:1.35}
+  .bp:active{transform:scale(.96)}
   .bp.warn{color:var(--warnFg);background:var(--warnBg);border-color:var(--warnBg)}
   .bp.hot{color:var(--hotFg);background:var(--hotBg);border-color:var(--hotBg)}
 
@@ -184,19 +189,31 @@
 
   /* ---------------- 요약 링 카드 ---------------- */
   .card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.95rem}
-  .summary{display:flex;align-items:center;gap:0.8rem;padding:0.85rem 0.95rem}
-  .ring{flex:0 0 4.6rem}
-  .sum-row{display:flex;gap:0.85rem;flex-wrap:wrap}
-  .sum-row>div{display:flex;flex-direction:column;min-width:0}
-  .sum-row b{font-size:1.24rem;font-weight:900;letter-spacing:-.04em;line-height:1.15}
-  .sum-row span{font-size:0.72rem;font-weight:800;color:var(--muted2);margin-top:0.02rem}
-  .sum-l{font-size:0.8rem;font-weight:700;color:var(--muted);margin-top:0.2rem;line-height:1.4}
+  .summary{display:flex;align-items:center;gap:0.75rem;padding:0.85rem 0.85rem}
+  .ring-wrap{flex:0 0 96px;display:flex;flex-direction:column;align-items:center;gap:0.16rem;
+    background:none;border:0;padding:0;font-family:inherit;color:inherit;cursor:pointer;border-radius:0.9rem}
+  .ring-wrap:active{transform:scale(.96)}
+  .ring{display:block;width:96px;height:96px}
+  .ring-cap{font-size:0.74rem;font-weight:900;color:var(--mintd);background:var(--mintl);
+    padding:0.1rem 0.42rem;border-radius:999px;white-space:nowrap;letter-spacing:-.01em}
+  .sum-row{display:flex;gap:0.7rem;flex-wrap:wrap}
+  .sum-k{display:flex;flex-direction:column;min-width:0;background:none;border:0;padding:0.1rem 0.15rem;
+    font-family:inherit;color:inherit;cursor:pointer;border-radius:0.5rem;text-align:left}
+  .sum-k:active{background:var(--card2)}
+  .sum-k b{font-size:1.24rem;font-weight:900;letter-spacing:-.04em;line-height:1.15}
+  .sum-k span{font-size:0.72rem;font-weight:800;color:var(--muted2);margin-top:0.02rem}
+  .sum-l{font-size:0.78rem;font-weight:700;color:var(--muted);margin-top:0.2rem;line-height:1.45}
   .sum-chips{display:flex;gap:0.3rem;margin-top:0.4rem;flex-wrap:wrap}
-  .sum-chips span{font-size:0.75rem;font-weight:800;color:var(--muted);background:var(--card2);padding:0.22rem 0.48rem;border-radius:0.5rem}
-  .sum-chips span.hot{color:var(--warnFg);background:var(--warnBg)}
+  .sumchip{font-family:inherit;font-size:0.75rem;font-weight:800;color:var(--muted);background:var(--card2);
+    border:0;padding:0.26rem 0.5rem;border-radius:0.5rem;cursor:pointer}
+  .sumchip.hot{color:var(--warnFg);background:var(--warnBg)}
+  .sumchip:active{transform:scale(.96)}
 
   /* ---------------- 도서관별 · 사람별 카드 ---------------- */
-  .libcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.85rem 0.95rem 0.8rem;margin-top:0.6rem}
+  .libcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.85rem 0.95rem 0.8rem;margin-top:0.6rem;
+    cursor:pointer;transition:transform .12s ease}
+  .libcard:active{transform:scale(.985)}
+  .goarrow{font-size:0.95rem;font-weight:900;color:var(--muted2);margin-left:0.1rem}
   .lib-h{display:flex;align-items:center;justify-content:space-between;gap:0.4rem;margin-bottom:0.5rem;flex-wrap:wrap}
   .lib-name{font-size:1.06rem;font-weight:900;letter-spacing:-.03em;display:flex;align-items:center;gap:0.4rem;min-width:0}
   .dotlib{width:0.5rem;height:0.5rem;border-radius:50%;background:var(--sn);flex:0 0 auto;display:inline-block}
@@ -217,7 +234,9 @@
     font-variant-numeric:tabular-nums}
   .metric .v b{font-size:0.98rem;font-weight:900;color:var(--fg)}
 
-  .pcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.85rem 0.95rem 0.75rem;margin-top:0.6rem}
+  .pcard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.85rem 0.95rem 0.75rem;margin-top:0.6rem;
+    cursor:pointer;transition:transform .12s ease}
+  .pcard:active{transform:scale(.985)}
   .p-head{display:flex;align-items:center;justify-content:space-between;gap:0.4rem;flex-wrap:wrap;
     padding-bottom:0.5rem;border-bottom:1px solid var(--line)}
   .p-name{font-size:1.08rem;font-weight:900;letter-spacing:-.03em;display:flex;align-items:center;gap:0.4rem}
@@ -256,15 +275,25 @@
 
   /* ---------------- 주간 캘린더 ---------------- */
   .cal{padding:0.7rem 0.4rem 0.55rem}
+  .cal-top{display:flex;align-items:center;justify-content:space-between;gap:0.35rem;padding:0 0.45rem 0.35rem}
+  .cal-nav{font-family:inherit;font-size:1rem;font-weight:900;color:var(--muted);background:var(--card2);
+    border:1px solid var(--line);border-radius:0.6rem;width:2.1rem;height:2.1rem;cursor:pointer;line-height:1}
+  .cal-nav:disabled{opacity:.35;cursor:default}
+  .cal-range{font-size:0.8rem;font-weight:900;color:var(--muted)}
   .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:0.1rem}
-  .cal-cell{display:flex;flex-direction:column;align-items:center;gap:0.28rem}
+  .cal-cell{display:flex;flex-direction:column;align-items:center;gap:0.28rem;background:none;border:0;
+    padding:0.15rem 0;font-family:inherit;border-radius:0.8rem;cursor:pointer}
+  .cal-cell:active{background:var(--card2)}
   .cal-dow{font-size:0.74rem;font-weight:800;color:var(--muted2)}
   .cal-dow.sun{color:var(--bad)} .cal-dow.sat{color:#3b82f6}
   html[data-theme="dark"] .cal-dow.sat{color:#7ab7ff}
   .cal-num{width:2.3rem;height:2.3rem;border-radius:50%;display:flex;align-items:center;justify-content:center;
     font-size:0.98rem;font-weight:900;color:var(--fg)}
-  .cell-today .cal-num{background:linear-gradient(160deg,#34d399,var(--mint));color:#fff;
+  /* 오늘이지만 선택되지 않은 날 = 민트 링, 선택한 날 = 꽉 채은 민트 원 */
+  .cell-today .cal-num{box-shadow:inset 0 0 0 2px var(--mint);color:var(--mintd)}
+  .cell-sel .cal-num{background:linear-gradient(160deg,#34d399,var(--mint));color:#fff;
     box-shadow:0 5px 12px rgba(16,185,129,.4)}
+  .cell-sel .cal-dow{color:var(--mintd)}
   .dots{height:0.42rem;display:flex;gap:0.15rem;align-items:center}
   .dot{width:0.3rem;height:0.3rem;border-radius:50%;display:inline-block}
   .dot.red{background:var(--bad)} .dot.mint{background:var(--mint)} .dot.amber{background:var(--warn)}
@@ -272,6 +301,8 @@
   .cal-legend span{font-size:0.73rem;font-weight:800;color:var(--muted2);display:flex;align-items:center;gap:0.25rem}
 
   .daycard{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.7rem 0.9rem 0.2rem;margin-top:0.55rem}
+  .daycard.single{max-width:none}
+  .calday-empty{padding:0.55rem 0;color:var(--muted2);font-size:0.86rem;font-weight:700}
   .day-h{display:flex;align-items:center;gap:0.4rem;padding-bottom:0.45rem;border-bottom:1px solid var(--line)}
   .day-h b{font-size:0.98rem;font-weight:900}
   .day-h span{font-size:0.76rem;font-weight:800;color:var(--muted2)}
@@ -288,7 +319,10 @@
     overflow:hidden;text-overflow:ellipsis}
   .nextweek{margin-top:0.55rem;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.7rem 0.9rem}
   .nw-h{font-size:0.78rem;font-weight:900;color:var(--muted2);margin-bottom:0.3rem}
-  .nw-row{display:flex;gap:0.45rem;font-size:0.82rem;font-weight:700;color:var(--muted);padding:0.2rem 0;line-height:1.45}
+  .nw-row{display:flex;gap:0.45rem;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);
+    font-family:inherit;font-size:0.82rem;font-weight:700;color:var(--muted);padding:0.4rem 0;line-height:1.45;cursor:pointer}
+  .nw-row:first-of-type{border-top:0}
+  .nw-row:active{background:var(--card2)}
   .nw-row b{color:var(--fg);font-weight:900;min-width:2.6rem;flex:0 0 auto}
   .nw-row span{min-width:0;overflow-wrap:anywhere}
 
@@ -717,6 +751,7 @@ window.LibUI = { mount: function(DATA, OV){
     return s.indexOf('성남') >= 0 ? 'sn' : (s.indexOf('하남') >= 0 ? 'hn' : 'ra');
   }
   function libDot(lib){ return '<i class="dotlib ' + libKey(lib) + '"></i>'; }
+  function libShort(lib){ return String(lib || '').replace('성남위례','성남').replace('하남위례','하남').replace('위례래미안','래미안'); }
   function libPill(lib){
     return '<span class="pill ' + libKey(lib) + '">' + esc(lib) + '</span>';
   }
@@ -844,7 +879,7 @@ window.LibUI = { mount: function(DATA, OV){
     {id:'newb', ic:'🆕', label:'신간'}
   ];
   var state = {tab:'todo', by:'lib', lib:'전체', who:'전체', loanKind:'all', sfilter:'전체', q:'', limit:24,
-               addOpen:false, selMode:false, sel:{}, copyFallback:''};
+               addOpen:false, selMode:false, sel:{}, copyFallback:'', calWeek:0, calSel:''};
 
   /* ---------------- 직접 추가·제외 (localStorage 유지) ---------------- */
   var CUSTOM_KEY = 'libdash-custom-series';
@@ -1073,20 +1108,20 @@ window.LibUI = { mount: function(DATA, OV){
       big = 0; unit = '권'; em = '수령 대기';
       sub = '반납·수령 모두 여유가 있어요';
     }
-    var pills = '<span class="bp">수령 대기 ' + pick.length + '</span>';
-    if(due.length) pills += '<span class="bp warn">반납 임박 ' + due.length + ' · ' + ddayLabel(due[0].n) + '</span>';
-    else pills += '<span class="bp">반납 임박 0</span>';
-    if(overdue) pills += '<span class="bp hot">연체 ' + overdue + '</span>';
-    else pills += '<span class="bp">연체 0</span>';
+    var pills = '<button type="button" class="bp" data-jump="pickup">수령 대기 ' + pick.length + '</button>';
+    if(due.length) pills += '<button type="button" class="bp warn" data-jump="due">반납 임박 ' + due.length + ' · ' + ddayLabel(due[0].n) + '</button>';
+    else pills += '<button type="button" class="bp" data-jump="due">반납 임박 0</button>';
+    if(overdue) pills += '<button type="button" class="bp hot" data-jump="overdue">연체 ' + overdue + '</button>';
+    else pills += '<button type="button" class="bp" data-jump="overdue">연체 0</button>';
 
     $('#kpi').innerHTML =
       '<section class="banner">' +
         '<div class="bn-top"><span class="bn-badge">오늘 꼭 챙길 일</span>' +
-          '<span class="bn-more" data-goto="loans">전체 보기 ›</span></div>' +
+          '<button type="button" class="bn-more" data-jump="pickup">전체 보기 ›</button></div>' +
         '<div class="bn-main"><div>' +
           '<div class="bn-title">' + title + '</div>' +
           '<div class="bn-sub">' + sub + '</div>' +
-        '</div><div class="bn-num"><b>' + big + '<span>' + unit + '</span></b><em>' + em + '</em></div></div>' +
+        '</div><button type="button" class="bn-num" data-jump="pickup"><b>' + big + '<span>' + unit + '</span></b><em>' + em + '</em></button></div>' +
         '<div class="bn-pills">' + pills + '</div>' +
       '</section>';
   }
@@ -1101,16 +1136,21 @@ window.LibUI = { mount: function(DATA, OV){
     '</div>';
   }
   function ringSvg(n, cap){
-    var r = 30, c = 2 * Math.PI * r;
+    var R = 42, c = 2 * Math.PI * R;
     var pct = cap ? Math.min(1, n / cap) : 0;
     var off = c * (1 - pct);
-    return '<svg class="ring" viewBox="0 0 78 78" width="78" height="78" aria-hidden="true">' +
-      '<circle cx="39" cy="39" r="30" fill="none" stroke="var(--ringbg)" stroke-width="9"/>' +
-      '<circle cx="39" cy="39" r="30" fill="none" stroke="var(--mint)" stroke-width="9" stroke-linecap="round" ' +
-        'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 39 39)"/>' +
-      '<text x="39" y="38" text-anchor="middle" font-size="20" font-weight="900" fill="var(--fg)">' + n + '</text>' +
-      '<text x="39" y="53" text-anchor="middle" font-size="10" font-weight="800" fill="var(--muted2)">/' + cap + '권</text>' +
+    return '<svg class="ring" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="전체 대출 ' + n + '권 / 한도 ' + cap + '권">' +
+      '<circle cx="48" cy="48" r="42" fill="none" stroke="var(--ringbg)" stroke-width="9"/>' +
+      '<circle cx="48" cy="48" r="42" fill="none" stroke="var(--mint)" stroke-width="9" stroke-linecap="round" ' +
+        'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '" transform="rotate(-90 48 48)"/>' +
+      '<text x="48" y="45" text-anchor="middle" font-size="26" font-weight="900" fill="var(--fg)">' + n + '</text>' +
+      '<text x="48" y="64" text-anchor="middle" font-size="12.5" font-weight="800" fill="var(--muted2)">/' + cap + '권</text>' +
       '</svg>';
+  }
+  function ringBlock(n, cap){
+    return '<button type="button" class="ring-wrap" data-jump="loan" ' +
+      'aria-label="전체 대출 ' + n + '권, 한도 ' + cap + '권 — 대출·예약 탭으로 이동">' +
+      ringSvg(n, cap) + '<span class="ring-cap">전체 대출</span></button>';
   }
   function summaryCard(){
     var nLoan = (DATA.loans||[]).length;
@@ -1125,17 +1165,18 @@ window.LibUI = { mount: function(DATA, OV){
     function liveResAll(l){ return (DATA.reserves||[]).filter(function(x){ return x.lib === l; }).length; }
     var pick = pickupItems().length;
     var chips = '';
-    if(fullLibs) chips += '<span class="hot">예약 만석 ' + fullLibs + '곳</span>';
-    chips += '<span>연체 ' + (DATA.overdue || 0) + '</span>';
-    if(pick) chips += '<span>수령 대기 ' + pick + '</span>';
-    return '<div class="card summary">' + ringSvg(nLoan, capSum) +
+    if(fullLibs) chips += '<button type="button" class="sumchip hot" data-jump="reserve">예약 만석 ' + fullLibs + '곳</button>';
+    chips += '<button type="button" class="sumchip" data-jump="overdue">연체 ' + (DATA.overdue || 0) + '</button>';
+    if(pick) chips += '<button type="button" class="sumchip" data-jump="pickup">수령 대기 ' + pick + '</button>';
+    var breakdown = LIBS.map(function(l){ return libShort(l) + ' ' + (whoCap(l,'loan') || 0); }).join(' + ');
+    return '<div class="card summary">' + ringBlock(nLoan, capSum) +
       '<div style="flex:1;min-width:0">' +
         '<div class="sum-row">' +
-          '<div><b>' + nLoan + '</b><span>대출(권)</span></div>' +
-          '<div><b>' + nRes + '</b><span>예약(건)</span></div>' +
-          '<div><b>' + nHold + '</b><span>상호대차</span></div>' +
+          '<button type="button" class="sum-k" data-jump="loan"><b>' + nLoan + '</b><span>대출(권)</span></button>' +
+          '<button type="button" class="sum-k" data-jump="reserve"><b>' + nRes + '</b><span>예약(건)</span></button>' +
+          '<button type="button" class="sum-k" data-jump="hold"><b>' + nHold + '</b><span>상호대차</span></button>' +
         '</div>' +
-        '<div class="sum-l">세 곳 표준 한도 ' + capSum + '권 중 ' + nLoan + '권 — ' +
+        '<div class="sum-l">' + breakdown + ' = ' + capSum + '권 중 <b>' + nLoan + '권</b> 대출 · ' +
           (capSum >= nLoan ? '여유 ' + (capSum - nLoan) + '권' : '한도 초과') + '</div>' +
         '<div class="sum-chips">' + chips + '</div>' +
       '</div></div>';
@@ -1164,8 +1205,9 @@ window.LibUI = { mount: function(DATA, OV){
       var rows = metricRow('대출', lc, lcap, '한도') + metricRow('예약', rc, rcap, '만석');
       if(hcap) rows += metricRow('상호대차', hc, hcap, '만석');
       else rows += metricRow('비치중', availQty(lib), null, '', '권');
-      return '<div class="libcard"><div class="lib-h">' +
-        '<span class="lib-name">' + libDot(lib) + esc(lib) + '</span>' + chip + '</div>' + rows + '</div>';
+      return '<div class="libcard" data-jumplib="' + esc(lib) + '" role="button" tabindex="0" ' +
+        'aria-label="' + esc(lib) + ' 대출·예약 보기"><div class="lib-h">' +
+        '<span class="lib-name">' + libDot(lib) + esc(lib) + '</span>' + chip + '<span class="goarrow">›</span></div>' + rows + '</div>';
     }).join('');
   }
   function personCards(){
@@ -1187,9 +1229,10 @@ window.LibUI = { mount: function(DATA, OV){
         return '<div class="p-lib"><div class="p-libh">' + libDot(lib) + esc(lib) + tags + '</div>' + rows + '</div>';
       }).join('');
       var tot = '대출 ' + totL + ' · 예약 ' + totR + (totH ? ' · 상호대차 ' + totH : '');
-      return '<div class="pcard"><div class="p-head">' +
+      return '<div class="pcard" data-jumpwho="' + esc(who) + '" role="button" tabindex="0" ' +
+        'aria-label="' + esc(who) + ' 대출·예약 보기"><div class="p-head">' +
         '<span class="p-name"><i>' + esc(who.slice(0,1)) + '</i>' + esc(who) + '</span>' +
-        '<span class="p-tot">' + tot + '</span></div>' + body + '</div>';
+        '<span class="p-tot">' + tot + '</span><span class="goarrow">›</span></div>' + body + '</div>';
     }).join('');
   }
 
@@ -1249,12 +1292,26 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function weekSection(){
     var t = today();
+    var wk = state.calWeek || 0;
     var dow = t.getDay();
-    var start = new Date(t.getFullYear(), t.getMonth(), t.getDate() - dow);
+    var start = new Date(t.getFullYear(), t.getMonth(), t.getDate() - dow + wk * 7);
     var end = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 6);
     var sStr = ymd(start), eStr = ymd(end);
+    var tStr = ymd(t);
     var ev = weekEvents();
     var inWeek = ev.filter(function(x){ return x.date >= sStr && x.date <= eStr; });
+
+    /* 선택한 날짜 — 범위를 벗어나면 오늘(이번 주) 또는 그 주 첫 일정 날짜로 */
+    var sel = state.calSel;
+    if(!sel || sel < sStr || sel > eStr){
+      if(wk === 0) sel = tStr;
+      else {
+        var dset = {};
+        inWeek.forEach(function(x){ dset[x.date] = 1; });
+        var dkeys = Object.keys(dset).sort();
+        sel = dkeys.length ? dkeys[0] : sStr;
+      }
+    }
 
     var cells = '';
     for(var i = 0; i < 7; i++){
@@ -1265,40 +1322,48 @@ window.LibUI = { mount: function(DATA, OV){
       dayEv.forEach(function(x){ if(types.indexOf(x.dot) < 0) types.push(x.dot); });
       var dots = types.slice(0, 3).map(function(k){ return '<i class="dot ' + k + '"></i>'; }).join('');
       var dw = d.getDay();
-      cells += '<div class="cal-cell' + (ds === ymd(t) ? ' cell-today' : '') + '">' +
+      cells += '<button type="button" class="cal-cell' + (ds === tStr ? ' cell-today' : '') + (ds === sel ? ' cell-sel' : '') + '" ' +
+        'data-day="' + ds + '" aria-pressed="' + (ds === sel ? 'true' : 'false') + '" ' +
+        'aria-label="' + md(ds) + ' ' + WD[dw] + '요일 ' + (dayEv.length ? dayEv.length + '건' : '일정 없음') + '">' +
         '<span class="cal-dow' + (dw === 0 ? ' sun' : (dw === 6 ? ' sat' : '')) + '">' + WD[dw] + '</span>' +
         '<span class="cal-num">' + d.getDate() + '</span>' +
-        '<span class="dots">' + dots + '</span></div>';
+        '<span class="dots">' + dots + '</span></button>';
     }
-    var h = '<div class="sec"><h2>이번 주 반납·수령</h2><span class="hint">' + md(sStr) + ' ~ ' + md(eStr) + '</span></div>';
-    h += '<div class="card cal"><div class="cal-days">' + cells + '</div>' +
+    var wkLabel = wk === 0 ? '이번 주' : (wk === 1 ? '다음 주' : (wk === -1 ? '지난 주' : (wk > 0 ? wk + '주 후' : Math.abs(wk) + '주 전')));
+    var h = '<div class="sec"><h2>반납·수령 달력</h2><span class="hint">' + wkLabel + '</span></div>';
+    h += '<div class="card cal" id="calcard">' +
+      '<div class="cal-top">' +
+        '<button type="button" class="cal-nav" data-calweek="-1" aria-label="지난 주 보기">‹</button>' +
+        '<span class="cal-range">' + md(sStr) + ' ~ ' + md(eStr) + '</span>' +
+        '<button type="button" class="cal-nav" data-calweek="1" aria-label="다음 주 보기">›</button>' +
+      '</div>' +
+      '<div class="cal-days">' + cells + '</div>' +
       '<div class="cal-legend"><span><i class="dot red"></i>반납</span>' +
       '<span><i class="dot mint"></i>수령</span><span><i class="dot amber"></i>예약만기</span></div></div>';
 
-    var dayCards = '';
-    for(var j = 0; j < 7; j++){
-      var d2 = new Date(start.getFullYear(), start.getMonth(), start.getDate() + j);
-      var ds2 = ymd(d2);
-      if(ds2 < ymd(t)) continue;
-      var list = inWeek.filter(function(x){ return x.date === ds2; });
-      if(!list.length) continue;
-      var diff = Math.round((d2 - t) / 86400000);
-      var label = diff === 0 ? '오늘' : (diff === 1 ? '내일' : WD[d2.getDay()] + '요일');
-      dayCards += '<div class="daycard"><div class="day-h"><b>' + label + '</b><span>' + md(ds2) + '</span>' +
-        '<span class="cnt">' + list.length + '건</span></div>';
+    /* 선택한 날짜의 반납·수령·예약만기 */
+    var list = inWeek.filter(function(x){ return x.date === sel; });
+    var dt = parseDate(sel);
+    var diff = dt ? Math.round((dt - t) / 86400000) : null;
+    var lab = diff === 0 ? '오늘' : (diff === 1 ? '내일' : (diff === -1 ? '어제' : (dt ? WD[dt.getDay()] + '요일' : '')));
+    h += '<div class="daycard single" id="calday"><div class="day-h"><b>' + lab + '</b><span>' + md(sel) + '</span>' +
+      '<span class="cnt">' + list.length + '건</span></div>';
+    if(list.length){
       list.forEach(function(x){
-        dayCards += '<div class="ev"><span class="ev-tag ' + x.cls + '">' + x.type + '</span>' +
+        h += '<div class="ev"><span class="ev-tag ' + x.cls + '">' + x.type + '</span>' +
           '<span class="ev-t">' + esc(x.t) + '</span>' +
-          '<span class="ev-m">' + esc(x.who) + ' · ' + esc(String(x.lib).replace('위례래미안','래미안').replace('위례','')) + '</span></div>';
+          '<span class="ev-m">' + esc(x.who) + ' · ' + esc(libShort(x.lib)) + '</span></div>';
       });
-      dayCards += '</div>';
+    } else {
+      h += '<div class="calday-empty">' +
+        (diff === 0 ? '오늘 예정된 반납·만기가 없어요' : '이 날짜에는 반납·수령·예약만기가 없어요') + '</div>';
     }
-    if(!dayCards) dayCards = '<div class="daycard"><div class="empty">이번 주 남은 반납·수령이 없어요</div></div>';
-    h += '<div class="grid3">' + dayCards + '</div>';
+    h += '</div>';
 
-    /* 다음 주 (이번 주 토요일 이후 ~ 14일) */
+
+    /* 이 주 뒤 2주 일정 — 날짜를 누르면 그 주로 이동해 선택 */
     var nextStart = ymd(new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1));
-    var nextEnd = ymd(new Date(t.getFullYear(), t.getMonth(), t.getDate() + 14));
+    var nextEnd = ymd(new Date(end.getFullYear(), end.getMonth(), end.getDate() + 14));
     var nextEv = ev.filter(function(x){ return x.date >= nextStart && x.date <= nextEnd; });
     if(nextEv.length){
       var groups = {};
@@ -1311,9 +1376,9 @@ window.LibUI = { mount: function(DATA, OV){
         var head = Object.keys(partMap).map(function(t){ return t + ' ' + partMap[t]; }).join(' · ');
         var names = g.slice(0, 2).map(function(x){ return short(x.t); }).join(' · ');
         if(g.length > 2) names += ' 외 ' + (g.length - 2);
-        return '<div class="nw-row"><b>' + md(k) + '</b><span>' + esc(head + ' — ' + names) + '</span></div>';
+        return '<button type="button" class="nw-row" data-day="' + k + '"><b>' + md(k) + '</b><span>' + esc(head + ' — ' + names) + '</span><span class="goarrow">›</span></button>';
       }).join('');
-      h += '<div class="nextweek"><div class="nw-h">다음 주</div>' + rows + '</div>';
+      h += '<div class="nextweek"><div class="nw-h">이후 2주 · 날짜를 누르면 그 주로 이동</div>' + rows + '</div>';
     }
     return h;
   }
@@ -1397,14 +1462,14 @@ window.LibUI = { mount: function(DATA, OV){
   function renderFilters(){
     var libs = ['전체'].concat((DATA.libs || []).map(function(x){ return x.lib; }));
     var whos = ['전체'].concat(whoList());
-    var h = '<div class="filters">';
+    var h = '<div class="filters" id="loansTop">';
     h += '<div class="frow">' + libs.map(function(l){
       return '<button class="chipbtn' + (state.lib === l ? ' on' : '') + '" data-lib="' + l + '">' + l + '</button>';
     }).join('') + '</div>';
     h += '<div class="frow" style="margin-top:0.3rem">' + whos.map(function(w){
       return '<button class="chipbtn' + (state.who === w ? ' on' : '') + '" data-who="' + w + '">' + w + '</button>';
     }).join('') + '</div>';
-    var kinds = [{k:'all', l:'전체'}, {k:'loan', l:'대출중'}, {k:'reserve', l:'예약'}, {k:'hold', l:'상호대차'}, {k:'overdue', l:'연체'}];
+    var kinds = [{k:'all', l:'전체'}, {k:'loan', l:'대출중'}, {k:'reserve', l:'예약'}, {k:'hold', l:'상호대차'}, {k:'pickup', l:'수령 대기'}, {k:'overdue', l:'연체'}];
     h += '<div class="frow" style="margin-top:0.3rem">' + kinds.map(function(x){
       return '<button class="chipbtn' + (state.loanKind === x.k ? ' on' : '') + '" data-lkind="' + x.k + '">' + x.l + '</button>';
     }).join('') + '</div>';
@@ -1430,7 +1495,7 @@ window.LibUI = { mount: function(DATA, OV){
     var h = renderFilters();
     if(lk === 'overdue'){
       var ov = loans.filter(function(l){ return days(l.due) < 0; });
-      h += '<div class="sec"><h2>연체</h2><span class="n">' + ov.length + '</span><span class="hint">반납예정일 경과</span></div>';
+      h += '<div class="sec" id="sec-overdue"><h2>연체</h2><span class="n">' + ov.length + '</span><span class="hint">반납예정일 경과</span></div>';
       h += ov.length ? '<div class="cardgrid">' + ov.map(function(l){
         var n = days(l.due);
         return rowCard(
@@ -1442,8 +1507,19 @@ window.LibUI = { mount: function(DATA, OV){
         );
       }).join('') + '</div>' : '<div class="empty">연체 중인 도서가 없습니다 🎉</div>';
     }
+    if(lk === 'pickup'){
+      var pick = pickupItems().filter(match);
+      h += '<div class="sec" id="sec-pickup"><h2>수령 대기</h2><span class="n">' + pick.length + '</span>' +
+        '<span class="hint">도착했어요 · 데스크에서 받기</span></div>';
+      h += pick.length ? '<div class="cardgrid">' + pick.map(function(p){
+        var un = untilOf(p);
+        var top = libPill(p.lib) + '<span class="dday ' + (un ? ddayClass(days(un)) : 'warn') + '">' + esc(p.kind) + ' ' + esc(p.tag) + '</span>' +
+          (un ? '<span class="tiny">' + mdw(un) + '까지</span>' : '<span class="tiny">만기 확인</span>');
+        return rowCard(p.t, top, '<b>' + esc(p.who) + '</b>' + (p.note ? ' · ' + noteHtml(p.note) : ''));
+      }).join('') + '</div>' : '<div class="empty">지금 수령 대기 중인 책이 없습니다</div>';
+    }
     if(lk === 'all' || lk === 'loan'){
-      h += '<div class="sec"><h2>대출 중</h2><span class="n">' + loans.length + '</span><span class="hint">반납예정일 순</span></div>';
+      h += '<div class="sec" id="sec-loan"><h2>대출 중</h2><span class="n">' + loans.length + '</span><span class="hint">반납예정일 순</span></div>';
       h += loans.length ? '<div class="cardgrid">' + loans.map(function(l){
         var n = days(l.due);
         return rowCard(
@@ -1456,7 +1532,7 @@ window.LibUI = { mount: function(DATA, OV){
       }).join('') + '</div>' : '<div class="empty">해당 조건의 대출이 없습니다</div>';
     }
     if(lk === 'all' || lk === 'reserve'){
-      h += '<div class="sec"><h2>예약</h2><span class="n">' + res.length + '</span><span class="hint">1순위가 가장 빠름</span></div>';
+      h += '<div class="sec" id="sec-reserve"><h2>예약</h2><span class="n">' + res.length + '</span><span class="hint">1순위가 가장 빠름</span></div>';
       h += res.length ? '<div class="cardgrid">' + res.map(function(r){
         var extra = [];
         if(r.since) extra.push(md(r.since) + ' 신청');
@@ -1472,7 +1548,7 @@ window.LibUI = { mount: function(DATA, OV){
       }).join('') + '</div>' : '<div class="empty">해당 조건의 예약이 없습니다</div>';
     }
     if(lk === 'all' || lk === 'hold'){
-      h += '<div class="sec"><h2>상호대차</h2><span class="n">' + holds.length + '</span><span class="hint">도착 문자 후 3일 내 대출</span></div>';
+      h += '<div class="sec" id="sec-hold"><h2>상호대차</h2><span class="n">' + holds.length + '</span><span class="hint">도착 문자 후 3일 내 대출</span></div>';
       h += holds.length ? '<div class="cardgrid">' + holds.map(function(x){
         return rowCard(
           x.t,
@@ -1483,7 +1559,7 @@ window.LibUI = { mount: function(DATA, OV){
       }).join('') + '</div>' : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
     }
 
-    h += '<div class="sec"><h2>계정별 예약 한도</h2></div>';
+    h += '<div class="sec" id="sec-limits"><h2>계정별 예약 한도</h2></div>';
     h += DATA.limits.map(function(g){
       var rows = g.accounts.map(function(a){
         var pct = g.cap ? Math.min(100, Math.round(a.used / g.cap * 100)) : 0;
@@ -1827,6 +1903,48 @@ window.LibUI = { mount: function(DATA, OV){
     try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
   }
 
+  /* ---------------- 숫자·칩·카드 → 해당 목록으로 이동 ---------------- */
+  var JUMP = {
+    all:{k:'all', a:'loansTop'},
+    loan:{k:'loan', a:'sec-loan'},
+    due:{k:'loan', a:'sec-loan'},
+    reserve:{k:'reserve', a:'sec-reserve'},
+    hold:{k:'hold', a:'sec-hold'},
+    pickup:{k:'pickup', a:'sec-pickup'},
+    overdue:{k:'overdue', a:'sec-overdue'}
+  };
+  function scrollToEl(id){
+    setTimeout(function(){
+      var el = document.getElementById(id);
+      if(!el) return;
+      try{ el.scrollIntoView({block:'start', behavior:'smooth'}); }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
+    }, 70);
+  }
+  function jumpLoans(key, extra){
+    var spec = JUMP[key] || JUMP.all;
+    extra = extra || {};
+    state.tab = 'loans';
+    state.loanKind = spec.k;
+    state.lib = extra.lib || '전체';
+    state.who = extra.who || '전체';
+    renderTabs();
+    render();
+    scrollToEl(extra.anchor || spec.a);
+  }
+  /* 달력에서 날짜 선택 — 다른 주의 날짜면 그 주로 이동 */
+  function selectDay(ds){
+    if(!ds) return;
+    var t = today(), dd = parseDate(ds);
+    if(dd){
+      var wkStart = new Date(dd.getFullYear(), dd.getMonth(), dd.getDate() - dd.getDay());
+      var tStart = new Date(t.getFullYear(), t.getMonth(), t.getDate() - t.getDay());
+      state.calWeek = Math.round((wkStart - tStart) / 604800000);
+    }
+    state.calSel = ds;
+    render();
+    scrollToEl('calcard');
+  }
+
   /* ---------------- render ---------------- */
   function render(){
     var m = $('#main');
@@ -1862,6 +1980,23 @@ window.LibUI = { mount: function(DATA, OV){
     for(i=0;i<gos.length;i++) gos[i].addEventListener('click', function(){ setTab(this.getAttribute('data-goto')); });
     var gtabs = document.querySelectorAll('[data-gotab]');
     for(i=0;i<gtabs.length;i++) gtabs[i].addEventListener('click', function(){ setTab(this.getAttribute('data-gotab')); });
+    /* 배너·요약 카드 숫자/칩 → 대출·예약 탭의 해당 목록 */
+    var jmp = document.querySelectorAll('[data-jump]');
+    for(i=0;i<jmp.length;i++) jmp[i].addEventListener('click', function(){ jumpLoans(this.getAttribute('data-jump')); });
+    var jlib = document.querySelectorAll('[data-jumplib]');
+    for(i=0;i<jlib.length;i++) jlib[i].addEventListener('click', function(){ jumpLoans('all', {lib: this.getAttribute('data-jumplib')}); });
+    var jwho = document.querySelectorAll('[data-jumpwho]');
+    for(i=0;i<jwho.length;i++) jwho[i].addEventListener('click', function(){ jumpLoans('all', {who: this.getAttribute('data-jumpwho')}); });
+    /* 주간 달력 — 날짜 선택 · 주 이동 */
+    var days = document.querySelectorAll('[data-day]');
+    for(i=0;i<days.length;i++) days[i].addEventListener('click', function(){ selectDay(this.getAttribute('data-day')); });
+    var cws = document.querySelectorAll('[data-calweek]');
+    for(i=0;i<cws.length;i++) cws[i].addEventListener('click', function(){
+      state.calWeek = (state.calWeek || 0) + (parseInt(this.getAttribute('data-calweek'), 10) || 0);
+      state.calSel = '';
+      render();
+      scrollToEl('calcard');
+    });
     /* 할 일 항목 제외 */
     if(state.tab === 'todo' || state.tab === 'recs' || state.tab === 'newb'){
       var tex = document.querySelectorAll('[data-ex]');
