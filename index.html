@@ -279,7 +279,7 @@
   .tile-chips span{font-size:0.68rem;font-weight:800;background:var(--mintl);color:var(--chipOkFg);
     padding:0.12rem 0.3rem;border-radius:0.35rem;max-width:100%;min-width:0;
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tile-chips span.more{background:var(--card2);color:var(--muted)}
+  .tile-chips span.cnt{background:var(--card2);color:var(--muted)}
   .tile-more{font-size:0.7rem;font-weight:800;color:var(--accent);margin-top:auto;padding-top:0.5rem;
     display:flex;align-items:center;gap:0.15rem;white-space:nowrap}
   @media (max-width: 519px){          /* 3열 좁은 폭에서는 책 제목 2개까지만 */
@@ -1324,7 +1324,7 @@ window.LibUI = { mount: function(DATA, OV){
       var chips = titles.slice(0, 4).map(function(t, i){
         return '<span class="c' + (i + 1) + '">' + esc(short(t)) + '</span>';
       }).join('');
-      if(titles.length > 4) chips += '<span class="cn more">+' + (titles.length - 4) + '</span>';
+      if(titles.length > 4) chips += '<span class="cn cnt">+' + (titles.length - 4) + '</span>';
       var open = (state.tileOpen === lib);
       return '<button type="button" class="tile' + (open ? ' on' : '') + '" data-tilelib="' + esc(lib) + '" ' +
         'aria-expanded="' + (open ? 'true' : 'false') + '"' + (open ? ' aria-controls="tileDetail"' : '') + '>' +
