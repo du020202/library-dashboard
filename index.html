@@ -232,7 +232,7 @@
   /* ---------------- 바로 빌릴 수 있어요 (퀵 타일) ---------------- */
   .quick{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem}
   .tile{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.8rem 0.85rem 0.7rem;
-    position:relative;display:flex;min-width:0}
+    position:relative;display:flex;flex-direction:column;min-width:0}
   .tile>summary{flex:1;display:flex;flex-direction:column;min-width:0}
   .tile.wide{grid-column:1 / -1;background:linear-gradient(160deg,var(--card) 55%,var(--mintl) 100%)}
   .tile summary{list-style:none;cursor:pointer}
@@ -488,27 +488,39 @@
     color:var(--fg);font-family:inherit;font-size:0.86rem;padding:0.5rem 0.6rem;line-height:1.5;resize:vertical}
 
   /* ---------------- PC 넓은 화면 (960px 이상) ---------------- */
+  .grid3{display:block}
   @media (min-width: 960px){
     html,html[data-fs="0"]{--fs:15px}
     html[data-fs="1"]{--fs:16px}
     html[data-fs="2"]{--fs:17px}
     html[data-fs="3"]{--fs:18.5px}
-    body{padding-bottom:5rem}
-    .wrap{max-width:1180px;padding:0 1.5rem}
+    body{padding-top:3.5rem;padding-bottom:1.8rem}
+    .wrap{max-width:1080px;padding:0 1.5rem}
     header.hd{grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:1rem}
     .brand{grid-column:1}
     .hctl{grid-column:3}
     .sub{grid-column:1/-1;grid-row:2}
     .asofrow{grid-column:1/-1;grid-row:3}
     .cbtn{width:2.2rem;height:2.2rem;font-size:0.85rem}
+    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.6rem;align-items:start}
+    .grid3 .libcard,.grid3 .pcard,.grid3 .daycard,.grid3 .row,.grid3 .nextweek{margin-top:0;margin-bottom:0}
     .quick{grid-template-columns:repeat(3,1fr)}
     .tile.wide{grid-column:auto}
-    .cardgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.55rem;align-items:start}
+    .cardgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.6rem;align-items:start}
     .cardgrid .row{margin-bottom:0}
     .cardgrid .ser{margin-bottom:0}
-    .quick .tile{flex-direction:column}
     .sum-row{gap:1.4rem}
     .cal-num{width:2.6rem;height:2.6rem;font-size:1.05rem}
+    .seg{max-width:30rem}
+    #kpi .banner{margin-top:0.2rem}
+    /* 탭 바는 PC 에서 위쪽 가로 메뉴로 */
+    .tabbar{top:0;bottom:auto;left:50%;transform:translateX(-50%);width:100%;max-width:1080px;
+      grid-template-columns:repeat(5,minmax(0,1fr));gap:0.3rem;
+      padding:0.3rem 0.8rem;border-top:0;border-bottom:1px solid var(--line2);border-radius:0;
+      box-shadow:0 6px 18px rgba(16,24,40,.06)}
+    .tb{flex-direction:row;gap:0.35rem;min-height:2.4rem;font-size:0.86rem}
+    .tb .ic{font-size:1rem}
+    .toast{bottom:1.6rem}
   }
 
   /* ---------- 잠금 화면 ---------- */
@@ -710,7 +722,7 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function capMap(){
     if(DATA.caps) return DATA.caps;
-    return {'성남위례':{loan:6,reserve:3,hold:3}, '하남위례':{loan:5,reserve:2,hold:2},
+    return {'성남위례':{loan:6,reserve:3,hold:3,holdTotal:6}, '하남위례':{loan:5,reserve:2,hold:2},
             '위례래미안':{loan:5,reserve:null,hold:null}};
   }
   function capOf(lib, kind){
@@ -720,6 +732,8 @@ window.LibUI = { mount: function(DATA, OV){
     return (v === undefined || v === null) ? null : v;
   }
   function whoCap(lib, kind){         /* 도서관 한 칸 = 계정 3개 합 */
+    var m = capMap()[lib];
+    if(m && kind === 'hold' && m.holdTotal !== undefined && m.holdTotal !== null) return m.holdTotal;
     var c = capOf(lib, kind);
     return c ? c * 3 : null;
   }
@@ -1270,7 +1284,7 @@ window.LibUI = { mount: function(DATA, OV){
       dayCards += '</div>';
     }
     if(!dayCards) dayCards = '<div class="daycard"><div class="empty">이번 주 남은 반납·수령이 없어요</div></div>';
-    h += dayCards;
+    h += '<div class="grid3">' + dayCards + '</div>';
 
     /* 다음 주 (이번 주 토요일 이후 ~ 14일) */
     var nextStart = ymd(new Date(end.getFullYear(), end.getMonth(), end.getDate() + 1));
@@ -1299,14 +1313,14 @@ window.LibUI = { mount: function(DATA, OV){
     var list = (DATA.holds||[]).filter(function(x){ return x.status !== '입수'; });
     var h = '<div class="sec"><h2>상호대차 진행</h2><span class="n">' + list.length + '</span>' +
       '<span class="hint">입수 후 3일 내 대출</span></div>';
-    h += list.length ? list.map(function(x){
+    h += list.length ? '<div class="grid3">' + list.map(function(x){
       return rowCard(
         x.t,
         libPill(x.lib) + '<span class="dday warn">' + esc(x.status) + '</span>',
         '<b>' + esc(x.who) + '</b> · ' + esc(x.from) + ' → ' + esc(x.to),
         x.status + ' · ' + md(x.since) + ' 신청' + (x.note ? ' · ' + x.note : '')
       );
-    }).join('') : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
+    }).join('') + '</div>' : '<div class="empty">진행 중인 상호대차가 없습니다</div>';
     return h;
   }
   function simpleRows(list, withEx){
@@ -1336,10 +1350,10 @@ window.LibUI = { mount: function(DATA, OV){
     }
     h += '<div class="sec"><h2>타관 상호대차 대기</h2><span class="n">' + mo.length + '</span>' +
       '<span class="hint">비치중 되면 신청</span></div>';
-    h += mo.length ? simpleRows(mo, true) : '<div class="empty">표시할 항목이 없습니다</div>';
+    h += mo.length ? '<div class="grid3">' + simpleRows(mo, true) + '</div>' : '<div class="empty">표시할 항목이 없습니다</div>';
     h += '<div class="sec"><h2>곧 나오는 신간</h2><span class="n">' + up.length + '</span>' +
       '<span class="hint">출간일 순</span></div>';
-    h += up.length ? simpleRows(up, true) : '<div class="empty">표시할 항목이 없습니다</div>';
+    h += up.length ? '<div class="grid3">' + simpleRows(up, true) + '</div>' : '<div class="empty">표시할 항목이 없습니다</div>';
     return h;
   }
   function noticeSection(){
@@ -1360,7 +1374,7 @@ window.LibUI = { mount: function(DATA, OV){
       '<span class="hint">' + esc(DATA.asOf) + ' 기준</span></div>';
     h += segHtml();
     h += summaryCard();
-    h += (state.by === 'who') ? personCards() : libCards();
+    h += '<div class="grid3">' + ((state.by === 'who') ? personCards() : libCards()) + '</div>';
     h += quickTiles();
     h += weekSection();
     h += holdSection();
