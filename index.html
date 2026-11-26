@@ -753,8 +753,15 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function untilOf(x){
     if(x && x.until) return x.until;
-    var m = String((x && x.note) || '').match(/예약만기\s*(\d{4}-\d{2}-\d{2})/);
-    return m ? m[1] : '';
+    var n = String((x && x.note) || '');
+    var m = n.match(/예약만기\s*(\d{4})-(\d{2})-(\d{2})/);
+    if(m) return m[1] + '-' + m[2] + '-' + m[3];
+    m = n.match(/(\d{1,2})\/(\d{1,2})\s*까지/);      /* '11/28까지 대출' 같은 문구 */
+    if(m){
+      var y = today().getFullYear();
+      return y + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2);
+    }
+    return '';
   }
   function whenLabel(due){
     var n = days(due);
@@ -774,7 +781,7 @@ window.LibUI = { mount: function(DATA, OV){
     });
     (DATA.holds||[]).forEach(function(h){
       if(h.status === '입수'){
-        out.push({t:h.t, who:h.who, lib:h.lib, until:h.until||'', kind:'상호대차', tag:'입수', note:h.note||''});
+        out.push({t:h.t, who:h.who, lib:h.lib, until:untilOf(h), kind:'상호대차', tag:'입수', note:h.note||''});
       }
     });
     out.sort(function(a,b){
