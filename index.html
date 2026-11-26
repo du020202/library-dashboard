@@ -821,12 +821,17 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function exBtn(t){ return '<button class="exbtn" data-ex="' + esc(t) + '">제외</button>'; }
   function normName(s){ return String(s == null ? '' : s).replace(/[\s\.·]/g, '').toLowerCase(); }
+  /* 앞의 괄호 부제 '(...)'·'[...]'를 떼어낸 이름 — '(만화로 보는) 그리스 로마 신화' 같은 제목이
+     '그리스 로마 신화' 제외와 이어지게 한다. */
+  function bareName(s){ return String(s == null ? '' : s).replace(/^\([^)]*\)\s*/, '').replace(/^\[[^\]]*\]\s*/, ''); }
   function isTodoHidden(t){
     if(excluded.indexOf(t) >= 0) return true;
-    var nt = normName(t);
+    var nt = normName(t), bt = normName(bareName(t));
     for(var i = 0; i < excluded.length; i++){
       var nm = normName(excluded[i]);
-      if(nm && nt.indexOf(nm) === 0) return true;
+      if(!nm) continue;
+      if(nt.indexOf(nm) === 0) return true;
+      if(bt !== nt && bt.indexOf(nm) === 0) return true;
     }
     return false;
   }
