@@ -447,7 +447,6 @@
     cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:0.22rem;line-height:1.2}
   .sbtn:active{transform:scale(.98)}
   .sbtn.add{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:900}
-  .sbtn.copy{background:var(--card2);border-style:dashed}
   .sbtn.on{border-color:var(--accent);color:var(--accent);background:var(--card2)}
   .selbar{display:flex;gap:0.35rem;flex-wrap:wrap;background:var(--card2);border:1px dashed var(--line2);
     border-radius:0.8rem;padding:0.55rem;margin-bottom:0.55rem}
@@ -501,6 +500,18 @@
     padding:0.7rem 0.8rem;font-size:0.84rem;color:var(--muted);line-height:1.6;margin-top:0.55rem;box-shadow:var(--sh)}
   .callout b{color:var(--fg)}
   .callout .ic{flex:0 0 auto}
+
+  /* ---------------- 추천 · 신간 기준일 / 다음 업데이트 ---------------- */
+  .dateline{display:flex;flex-wrap:wrap;gap:0.32rem;align-items:center;margin:0.2rem 0 0.1rem}
+  .dateline .dl{display:inline-flex;align-items:center;gap:0.3rem;font-size:0.82rem;font-weight:800;
+    padding:0.32rem 0.62rem;border-radius:999px;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);line-height:1.3;box-shadow:var(--sh)}
+  .dateline .dl b{color:var(--fg);font-weight:900;letter-spacing:-.01em}
+  .dateline .dl.now{background:var(--mintl);border-color:var(--mintl);color:var(--mintd)}
+  .dateline .dl.now b{color:var(--mintd)}
+  .dateline .dl.every{border-style:dashed;box-shadow:none;font-weight:700;color:var(--muted2)}
+  .dl-note{font-size:0.8rem;font-weight:700;color:var(--muted);line-height:1.55;margin:0.4rem 0.1rem 0.1rem}
+  .dl-note b{color:var(--fg);font-weight:900}
 
   /* ---------------- 추천도서 · 신간 ---------------- */
   .bk{display:grid;grid-template-columns:4.6rem 1fr;gap:0.65rem;background:var(--card);
@@ -915,7 +926,7 @@ window.LibUI = { mount: function(DATA, OV){
     {id:'newb', ic:'🆕', label:'신간'}
   ];
   var state = {tab:'todo', by:'lib', lib:'전체', who:'전체', loanKind:'all', sfilter:'전체', q:'', limit:24,
-               addOpen:false, selMode:false, sel:{}, copyFallback:'', calWeek:0, calSel:'', tileOpen:null};
+               addOpen:false, selMode:false, sel:{}, calWeek:0, calSel:'', tileOpen:null};
 
   /* ---------------- 직접 추가·제외 (localStorage 유지) ---------------- */
   var CUSTOM_KEY = 'libdash-custom-series';
@@ -1022,24 +1033,6 @@ window.LibUI = { mount: function(DATA, OV){
     state.addOpen = false; state.sfilter = '전체'; state.limit = 24;
     render();
   }
-  function changesText(){
-    var L = ['도서관 시리즈 모니터링 변경사항 (' + DATA.asOf + ')'];
-    if(custom.length){
-      L.push('', '추가 (' + custom.length + ')');
-      custom.forEach(function(c){
-        var bits = [];
-        if(c.start) bits.push('시작 ' + c.start + '권');
-        if(c.target) bits.push('목표 ' + c.target + '권');
-        L.push('· ' + c.name + (bits.length ? ' (' + bits.join(' · ') + ')' : '') + (c.memo ? ' — ' + c.memo : ''));
-      });
-    }
-    if(excluded.length){
-      L.push('', '제외 (' + excluded.length + ')');
-      excluded.forEach(function(n){ L.push('· ' + n + (findSeries(n) ? '' : ' (할 일 항목)')); });
-    }
-    L.push('', '위 목록을 모니터링 루틴에 반영해 주세요.');
-    return L.join('\n');
-  }
   function fallbackCopy(txt, done){
     try{
       var ta = document.createElement('textarea');
@@ -1050,24 +1043,6 @@ window.LibUI = { mount: function(DATA, OV){
       document.body.removeChild(ta);
       done(!!ok);
     }catch(e){ done(false); }
-  }
-  function copyChanges(){
-    var txt = changesText();
-    var done = function(ok){
-      var b = document.getElementById('copyBtn');
-      if(ok){
-        state.copyFallback = '';
-        if(b) b.textContent = '복사됨 ✓';
-      } else {
-        state.copyFallback = txt;
-        render();
-      }
-    };
-    try{
-      if(typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(txt).then(function(){ done(true); }, function(){ fallbackCopy(txt, done); });
-      } else { fallbackCopy(txt, done); }
-    }catch(e){ fallbackCopy(txt, done); }
   }
 
   /* ---------------- 넓은 뷰포트 보정 ---------------- */
@@ -1780,7 +1755,6 @@ window.LibUI = { mount: function(DATA, OV){
     h += '<div class="sertools">' +
       '<button class="sbtn add" id="addOpen">' + (state.addOpen ? '− 입력 닫기' : '+ 새 시리즈 추가') + '</button>' +
       '<button class="sbtn' + (state.selMode ? ' on' : '') + '" id="selMode">' + (state.selMode ? '선택 취소' : '선택해서 제외') + '</button>' +
-      ((custom.length || excluded.length) ? '<button class="sbtn copy" id="copyBtn">변경사항 복사</button>' : '') +
       ((custom.length || excluded.length)
         ? '<span class="smeta">직접 추가 ' + custom.length + ' · 제외 ' + excluded.length + '</span>' : '') +
       '</div>';
@@ -1790,10 +1764,6 @@ window.LibUI = { mount: function(DATA, OV){
         '<button class="sbtn add" id="selApply"' + (selCount() ? '' : ' disabled') + '>선택 ' + selCount() + '건 모니터링 제외</button>' +
         '<button class="sbtn" id="selCancel">취소</button>' +
         '</div>';
-    }
-    if(state.copyFallback){
-      h += '<div class="addform"><div class="fld"><label for="copyArea">클립보드가 막혀 있어요 — 아래 내용을 길게 눌러 복사하세요</label>' +
-        '<textarea id="copyArea" readonly>' + esc(state.copyFallback) + '</textarea></div></div>';
     }
     if(state.addOpen) h += addFormHtml();
     h += '<div class="legend">완간 = 모든 권이 출간된 시리즈 · 신간대기 = 최신권까지 읽어 다음 권을 기다림 · ' +
@@ -1867,7 +1837,7 @@ window.LibUI = { mount: function(DATA, OV){
     if(isMonitored(name)){ toast('이미 모니터링 목록에 있는 책이에요.'); return; }
     custom.push({name:name, start:0, target:0, memo:memo || '추천·신간에서 추가'});
     saveCustom();
-    toast('시리즈 탭 모니터링 목록에 추가했어요. 「변경사항 복사」에도 들어갑니다.');
+    toast('시리즈 탭 모니터링 목록에 추가했어요.');
     render();
   }
   function bookCard(b, kind){
@@ -1905,9 +1875,21 @@ window.LibUI = { mount: function(DATA, OV){
         '<div class="bkbtns">' + btn + '</div>' +
       '</div></article>';
   }
+  /* 격주 토요일 09:00 갱신 대상 탭 상단의 기준일 · 다음 업데이트 칩 */
+  function bookAsOfHtml(kind){
+    var asOf = (kind === 'new' ? (DATA.newAsOf || DATA.recsAsOf) : (DATA.recsAsOf || DATA.newAsOf)) || '';
+    var next = DATA.booksNextUpdate || '';
+    var every = DATA.booksNextNote || '격주 토요일';
+    var h = '<div class="dateline">';
+    if(asOf) h += '<span class="dl now">📅 <b>' + esc(asOf) + '</b> 기준</span>';
+    if(next) h += '<span class="dl next">다음 업데이트 <b>' + esc(next) + '</b> · ' + esc(every) + '</span>';
+    h += '</div>';
+    return h;
+  }
   function renderRecs(){
     var L = DATA.recs || [];
-    var h = '<div class="sec"><h2>⭐ 추천도서</h2><span class="n">' + L.length + '</span>' +
+    var h = bookAsOfHtml('rec');
+    h += '<div class="sec"><h2>⭐ 추천도서</h2><span class="n">' + L.length + '</span>' +
       '<span class="hint">' + esc(DATA.recsHint || '가족이 읽은 시리즈 기준') + '</span></div>';
     if(DATA.recsNoteHtml) h += '<div class="callout"><span class="ic">🧠</span><div>' + DATA.recsNoteHtml + '</div></div>';
     h += '<div id="reclist"></div>';
@@ -1915,7 +1897,11 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function renderNewBooks(){
     var L = DATA.newbooks || [];
-    var h = '<div class="sec"><h2>🆕 신간안내</h2><span class="n">' + L.length + '</span>' +
+    var pend = (DATA.upcoming || []).filter(function(x){ return !x.past; }).length;
+    var h = bookAsOfHtml('new');
+    h += '<div class="dl-note">곧 나오는 신간 <b>' + pend + '종</b>은 매일 아침 점검에서 위례 입수 여부만 확인하고, ' +
+      '서점 전체 신간·추천 목록은 <b>' + esc(DATA.booksNextNote || '격주 토요일') + ' 09:00</b>에 새로 받습니다.</div>';
+    h += '<div class="sec"><h2>🆕 신간안내</h2><span class="n">' + L.length + '</span>' +
       '<span class="hint">2026년 10~11월 · 예스24 분야 신상품</span></div>';
     if(DATA.newbNoteHtml) h += '<div class="callout"><span class="ic">🗓</span><div>' + DATA.newbNoteHtml + '</div></div>';
     h += '<div id="newlist"></div>';
@@ -2128,8 +2114,6 @@ window.LibUI = { mount: function(DATA, OV){
       if(ac) ac.addEventListener('click', function(){ state.addOpen = false; render(); });
       var asv = document.getElementById('adSave');
       if(asv) asv.addEventListener('click', addSeriesFromForm);
-      var cb = document.getElementById('copyBtn');
-      if(cb) cb.addEventListener('click', copyChanges);
       var sm = document.getElementById('selMode');
       if(sm) sm.addEventListener('click', function(){ state.selMode = !state.selMode; state.sel = {}; render(); });
       var sa = document.getElementById('selAll');
