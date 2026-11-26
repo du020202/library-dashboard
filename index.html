@@ -230,6 +230,18 @@
   .bar i.none{background:var(--line2)}
   .bar i.unk{background:repeating-linear-gradient(45deg,#a7f3d0,#a7f3d0 6px,#dcfce7 6px,#dcfce7 12px)}
   html[data-theme="dark"] .bar i.unk{background:repeating-linear-gradient(45deg,#14532d,#14532d 6px,#0f3d24 6px,#0f3d24 12px)}
+  /* 비치중 — 도서관 점 색과 같은 빗금 바 (한도가 아니라 서가에 있는 권수) */
+  .bar i.avail{background:repeating-linear-gradient(45deg,var(--av1),var(--av1) 5px,var(--av2) 5px,var(--av2) 10px)}
+  .bar i.avail.lib-sn{--av1:#10b981;--av2:#d1fae5}
+  .bar i.avail.lib-hn{--av1:#0ea5e9;--av2:#e0f2fe}
+  .bar i.avail.lib-ra{--av1:#8b5cf6;--av2:#ede9fe}
+  html[data-theme="dark"] .bar i.avail.lib-sn{--av1:#10b981;--av2:#0c3b2c}
+  html[data-theme="dark"] .bar i.avail.lib-hn{--av1:#38bdf8;--av2:#0c3a52}
+  html[data-theme="dark"] .bar i.avail.lib-ra{--av1:#a78bfa;--av2:#2e2350}
+  .metric.availrow{width:100%;background:none;border:0;padding:0.12rem 0;margin-top:0.42rem;
+    font-family:inherit;color:inherit;text-align:left;cursor:pointer;border-radius:0.5rem}
+  .metric.availrow:active{background:var(--card2)}
+  .metric .arr{font-size:0.95rem;font-weight:900;color:var(--muted2);margin-left:0.1rem;line-height:1}
   .metric .v{font-size:0.8rem;font-weight:700;color:var(--muted);text-align:right;white-space:nowrap;
     font-variant-numeric:tabular-nums}
   .metric .v b{font-size:0.98rem;font-weight:900;color:var(--fg)}
@@ -248,25 +260,50 @@
   .p-libh{display:flex;align-items:center;gap:0.3rem;font-size:0.86rem;font-weight:900;color:var(--fg);flex-wrap:wrap}
   .p-libh .chip{margin-left:auto}
 
-  /* ---------------- 바로 빌릴 수 있어요 (퀵 타일) ---------------- */
-  .quick{display:grid;grid-template-columns:1fr 1fr;gap:0.55rem}
-  .tile{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.8rem 0.85rem 0.7rem;
-    position:relative;display:flex;flex-direction:column;min-width:0}
-  .tile>summary{flex:1;display:flex;flex-direction:column;min-width:0}
-  .tile.wide{grid-column:1 / -1;background:linear-gradient(160deg,var(--card) 55%,var(--mintl) 100%)}
-  .tile summary{list-style:none;cursor:pointer}
-  .tile summary::-webkit-details-marker{display:none}
-  .tile-lib{font-size:0.8rem;font-weight:800;color:var(--muted);display:flex;align-items:center;gap:0.3rem}
-  .tile-n{font-size:2.3rem;font-weight:900;line-height:1;letter-spacing:-.1rem;margin-top:0.3rem;color:var(--fg)}
-  .tile-n span{font-size:0.86rem;font-weight:800;letter-spacing:0;margin-left:0.4rem;color:var(--muted)}
-  .tile-sub{font-size:0.76rem;font-weight:700;color:var(--muted2);margin-top:0.15rem}
-  .tile-chips{display:flex;flex-wrap:wrap;gap:0.22rem;margin-top:0.5rem}
-  .tile-chips span{font-size:0.72rem;font-weight:800;background:var(--mintl);color:var(--chipOkFg);
-    padding:0.16rem 0.4rem;border-radius:0.4rem;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tile.wide .tile-chips span{background:var(--chipInfoBg);color:var(--chipInfoFg)}
-  .tile-more{font-size:0.76rem;font-weight:800;color:var(--accent);margin-top:auto;padding-top:0.6rem;
-    display:flex;align-items:center;gap:0.15rem}
-  .tile-list{margin-top:0.55rem;padding-top:0.5rem;border-top:1px dashed var(--line2);width:100%}
+  /* ---------------- 바로 빌릴 수 있어요 (퀵 타일 3열) ---------------- */
+  .quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.4rem;align-items:stretch}
+  .tile{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:0.6rem 0.55rem 0.55rem;
+    display:flex;flex-direction:column;min-width:0;border:1px solid transparent;
+    font-family:inherit;color:inherit;text-align:left;cursor:pointer;transition:transform .12s ease}
+  .tile:active{transform:scale(.98)}
+  .tile.on{border-color:var(--mint);background:linear-gradient(165deg,var(--card) 55%,var(--mintl) 100%)}
+  .tile>span{min-width:0}
+  .tile-n,.tile-sub{display:block}
+  .tile-lib{font-size:0.72rem;font-weight:800;color:var(--muted);display:flex;align-items:center;gap:0.25rem;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile-lib .dotlib{width:0.42rem;height:0.42rem}
+  .tile-n{font-size:1.9rem;font-weight:900;line-height:1;letter-spacing:-.07rem;margin-top:0.32rem;color:var(--fg)}
+  .tile-n span{font-size:0.7rem;font-weight:800;letter-spacing:0;margin-left:0.16rem;color:var(--muted)}
+  .tile-sub{font-size:0.72rem;font-weight:700;color:var(--muted2);margin-top:0.2rem;line-height:1.35}
+  .tile-chips{display:flex;flex-wrap:wrap;gap:0.2rem;margin-top:0.45rem;flex:1 1 auto;align-content:flex-start;min-width:0}
+  .tile-chips span{font-size:0.68rem;font-weight:800;background:var(--mintl);color:var(--chipOkFg);
+    padding:0.12rem 0.3rem;border-radius:0.35rem;max-width:100%;min-width:0;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tile-chips span.more{background:var(--card2);color:var(--muted)}
+  .tile-more{font-size:0.7rem;font-weight:800;color:var(--accent);margin-top:auto;padding-top:0.5rem;
+    display:flex;align-items:center;gap:0.15rem;white-space:nowrap}
+  @media (max-width: 519px){          /* 3열 좁은 폭에서는 책 제목 2개까지만 */
+    .tile-chips span.c3,.tile-chips span.c4,.tile-chips span.cn{display:none}
+  }
+  @media (min-width: 560px){
+    .quick{gap:0.55rem}
+    .tile{padding:0.8rem 0.75rem 0.7rem}
+    .tile-lib{font-size:0.8rem}
+    .tile-n{font-size:2.3rem;letter-spacing:-.1rem}
+    .tile-n span{font-size:0.86rem;margin-left:0.3rem}
+    .tile-sub{font-size:0.76rem}
+    .tile-chips span{font-size:0.72rem;padding:0.16rem 0.4rem}
+    .tile-more{font-size:0.76rem;padding-top:0.6rem}
+  }
+  /* 펼친 권별 목록은 3열 카드 아래 전체 폭으로 */
+  .tiledetail{margin-top:0.5rem;background:var(--card);border-radius:var(--r);box-shadow:var(--sh);
+    border:1px solid var(--mintl);padding:0.7rem 0.85rem 0.5rem}
+  .td-h{display:flex;align-items:center;gap:0.35rem;padding-bottom:0.45rem;border-bottom:1px solid var(--line)}
+  .td-h b{font-size:0.95rem;font-weight:900;letter-spacing:-.02em}
+  .td-n{font-size:0.76rem;font-weight:800;color:var(--muted2)}
+  .td-x{margin-left:auto;font-family:inherit;font-size:0.76rem;font-weight:800;color:var(--muted);
+    background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:0.2rem 0.55rem;cursor:pointer}
+  .td-x:active{transform:scale(.96)}
   .tl-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0.2rem 0.5rem;padding:0.42rem 0;align-items:start}
   .tl-t{font-size:0.84rem;font-weight:800;color:var(--fg);line-height:1.4;overflow-wrap:anywhere}
   .tl-m{grid-column:1;font-size:0.74rem;font-weight:700;color:var(--muted2);line-height:1.4}
@@ -538,8 +575,7 @@
     .cbtn{width:2.2rem;height:2.2rem;font-size:0.85rem}
     .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.6rem;align-items:start}
     .grid3 .libcard,.grid3 .pcard,.grid3 .daycard,.grid3 .row,.grid3 .nextweek{margin-top:0;margin-bottom:0}
-    .quick{grid-template-columns:repeat(3,1fr)}
-    .tile.wide{grid-column:auto}
+    .quick{grid-template-columns:repeat(3,minmax(0,1fr))}
     .cardgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0.6rem;align-items:start}
     .cardgrid .row{margin-bottom:0}
     .cardgrid .ser{margin-bottom:0}
@@ -879,7 +915,7 @@ window.LibUI = { mount: function(DATA, OV){
     {id:'newb', ic:'🆕', label:'신간'}
   ];
   var state = {tab:'todo', by:'lib', lib:'전체', who:'전체', loanKind:'all', sfilter:'전체', q:'', limit:24,
-               addOpen:false, selMode:false, sel:{}, copyFallback:'', calWeek:0, calSel:''};
+               addOpen:false, selMode:false, sel:{}, copyFallback:'', calWeek:0, calSel:'', tileOpen:null};
 
   /* ---------------- 직접 추가·제외 (localStorage 유지) ---------------- */
   var CUSTOM_KEY = 'libdash-custom-series';
@@ -1181,18 +1217,36 @@ window.LibUI = { mount: function(DATA, OV){
         '<div class="sum-chips">' + chips + '</div>' +
       '</div></div>';
   }
-  function metricRow(k, n, cap, fullWord, unit){
-    var pct = cap ? Math.min(100, Math.round(n / cap * 100)) : Math.min(100, n * 20);
-    var full = cap ? (n >= cap) : false;
-    var cls = cap ? (full ? 'full' : '') : 'unk';
+  function metricRow(k, n, cap, fullWord, unit, opt){
+    opt = opt || {};
+    var pct, full = false, cls;
+    if(cap){
+      pct = Math.min(100, Math.round(n / cap * 100));
+      full = n >= cap;
+      cls = full ? 'full' : '';
+    }else if(opt.max){
+      /* 비치중 — 세 곳 중 가장 많은 권수를 100% 로 두고 비교, 1권도 눈에 보이게 최소 8% */
+      pct = n > 0 ? Math.max(8, Math.round(n / opt.max * 100)) : 0;
+      cls = 'avail' + (opt.tone ? ' lib-' + opt.tone : '');
+    }else{
+      pct = Math.min(100, n * 20);
+      cls = 'unk';
+    }
     var val = cap
       ? '<b>' + n + '</b>/' + cap + (full ? ' ' + (fullWord || '만석') : '')
       : '<b>' + n + '</b>' + (unit || '건');
-    return '<div class="metric"><span class="k">' + k + '</span>' +
-      '<div class="bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div>' +
-      '<span class="v">' + val + '</span></div>';
+    var inner = '<span class="k">' + k + '</span>' +
+      '<span class="bar"><i class="' + cls + '" style="width:' + pct + '%"></i></span>' +
+      '<span class="v">' + val + (opt.jump ? '<span class="arr">›</span>' : '') + '</span>';
+    if(opt.jump){
+      return '<button type="button" class="metric availrow" data-tilejump="' + esc(opt.jump) + '" ' +
+        'aria-label="' + esc(k) + ' ' + n + '권 — 바로 빌릴 수 있어요 목록 보기">' + inner + '</button>';
+    }
+    return '<div class="metric">' + inner + '</div>';
   }
   function libCards(){
+    var maxAvail = 1;
+    LIBS.forEach(function(l){ maxAvail = Math.max(maxAvail, availQty(l)); });
     return LIBS.map(function(lib){
       var lc = (DATA.loans||[]).filter(function(x){ return x.lib === lib; }).length;
       var rc = (DATA.reserves||[]).filter(function(x){ return x.lib === lib; }).length;
@@ -1204,7 +1258,9 @@ window.LibUI = { mount: function(DATA, OV){
       else chip = '<span class="chip ok">' + (lc + rc > 0 ? '여유' : '한가') + '</span>';
       var rows = metricRow('대출', lc, lcap, '한도') + metricRow('예약', rc, rcap, '만석');
       if(hcap) rows += metricRow('상호대차', hc, hcap, '만석');
-      else rows += metricRow('비치중', availQty(lib), null, '', '권');
+      /* 3곳 모두 비치중 줄 — 누르면 아래 '바로 빌릴 수 있어요' 의 그 도서관 목록이 펼쳐진다 */
+      rows += metricRow('비치중', availQty(lib), null, '', '권',
+                        {tone: libKey(lib), max: maxAvail, jump: lib});
       return '<div class="libcard" data-jumplib="' + esc(lib) + '" role="button" tabindex="0" ' +
         'aria-label="' + esc(lib) + ' 대출·예약 보기"><div class="lib-h">' +
         '<span class="lib-name">' + libDot(lib) + esc(lib) + '</span>' + chip + '<span class="goarrow">›</span></div>' + rows + '</div>';
@@ -1237,45 +1293,61 @@ window.LibUI = { mount: function(DATA, OV){
   }
 
   /* ---------------- 바로 빌릴 수 있어요 (퀵 타일) ---------------- */
+  function tileListHtml(lib){
+    var pk = pickupByLib(lib), av = availByLib(lib), list = '';
+    pk.forEach(function(p){
+      list += '<div class="tl-row"><div class="tl-t">' + esc(p.t) + '</div>' +
+        '<div class="tl-m">' + esc(p.kind) + ' ' + esc(p.tag) + ' · ' + esc(p.who) + ' · ' +
+        esc(p.until ? md(p.until) + '까지' : '만기 확인') + '</div></div>';
+    });
+    av.forEach(function(a){
+      var q = qtyOf(a);
+      list += '<div class="tl-row"><div class="tl-t">' + esc(a.t) + '</div>' +
+        '<div class="tl-m">비치중' + (q > 1 ? ' · ' + q + '권' : '') + ' · 지금 대출 가능</div>' +
+        exBtn(a.t) + '</div>';
+    });
+    if(!list) list = '<div class="tl-row"><div class="tl-m">지금은 바로 빌릴 책이 없어요.</div></div>';
+    return list;
+  }
   function quickTiles(){
     var total = 0;
+    var aq = LIBS.map(function(lib){ return availQty(lib); });
     var tiles = LIBS.map(function(lib, idx){
       var pk = pickupByLib(lib), av = availByLib(lib);
-      var aq = availQty(lib);
-      var n = pk.length + aq;
+      var n = pk.length + aq[idx];
       total += n;
       var subBits = [];
       if(pk.length) subBits.push('도착 ' + pk.length + '권');
-      if(aq) subBits.push('비치 ' + aq + '권');
+      if(aq[idx]) subBits.push('비치 ' + aq[idx] + '권');
       if(!subBits.length) subBits.push('지금은 없음');
-      var chips = pk.concat(av).slice(0, 4).map(function(x){
-        return '<span>' + esc(short(x.t)) + '</span>';
+      var titles = pk.map(function(p){ return p.t; }).concat(av.map(function(a){ return a.t; }));
+      var chips = titles.slice(0, 4).map(function(t, i){
+        return '<span class="c' + (i + 1) + '">' + esc(short(t)) + '</span>';
       }).join('');
-      if(pk.length + av.length > 4) chips += '<span>+' + (pk.length + av.length - 4) + '</span>';
-      var list = '';
-      pk.forEach(function(p){
-        list += '<div class="tl-row"><div class="tl-t">' + esc(p.t) + '</div>' +
-          '<div class="tl-m">' + esc(p.kind) + ' ' + esc(p.tag) + ' · ' + esc(p.who) + ' · ' +
-          esc(p.until ? md(p.until) + '까지' : '만기 확인') + '</div></div>';
-      });
-      av.forEach(function(a){
-        var q = qtyOf(a);
-        list += '<div class="tl-row"><div class="tl-t">' + esc(a.t) + '</div>' +
-          '<div class="tl-m">비치중' + (q > 1 ? ' · ' + q + '권' : '') + ' · 지금 대출 가능</div>' +
-          exBtn(a.t) + '</div>';
-      });
-      if(!list) list = '<div class="tl-row"><div class="tl-m">지금은 바로 빌릴 책이 없어요.</div></div>';
-      var wide = (idx === LIBS.length - 1) ? ' wide' : '';
-      return '<details class="tile' + wide + '"><summary>' +
-        '<div class="tile-lib">' + libDot(lib) + esc(lib) + '</div>' +
-        '<div class="tile-n">' + n + '<span>권</span></div>' +
-        '<div class="tile-sub">' + subBits.join(' · ') + '</div>' +
-        '<div class="tile-chips">' + chips + '</div>' +
-        '<div class="tile-more">목록 펼치기 ⌄</div></summary>' + list + '</details>';
+      if(titles.length > 4) chips += '<span class="cn more">+' + (titles.length - 4) + '</span>';
+      var open = (state.tileOpen === lib);
+      return '<button type="button" class="tile' + (open ? ' on' : '') + '" data-tilelib="' + esc(lib) + '" ' +
+        'aria-expanded="' + (open ? 'true' : 'false') + '"' + (open ? ' aria-controls="tileDetail"' : '') + '>' +
+        '<span class="tile-lib">' + libDot(lib) + esc(lib) + '</span>' +
+        '<span class="tile-n">' + n + '<span>권</span></span>' +
+        '<span class="tile-sub">' + subBits.join(' · ') + '</span>' +
+        '<span class="tile-chips">' + chips + '</span>' +
+        '<span class="tile-more">' + (open ? '목록 접기 ⌃' : '목록 펼치기 ⌄') + '</span></button>';
     }).join('');
-    return '<div class="sec"><h2>바로 빌릴 수 있어요</h2><span class="hint">총 ' + total + '권 · 지금 서가에</span></div>' +
-      '<div class="quick">' + tiles + '</div>' +
-      '<div class="hintline">타일을 누르면 권별 목록이 펼쳐집니다.</div>';
+    var detail = '';
+    var oi = state.tileOpen ? LIBS.indexOf(state.tileOpen) : -1;
+    if(oi >= 0){
+      var oq = pickupByLib(state.tileOpen).length + aq[oi];
+      detail = '<div class="tiledetail" id="tileDetail">' +
+        '<div class="td-h">' + libDot(state.tileOpen) + '<b>' + esc(state.tileOpen) + '</b>' +
+        '<span class="td-n">' + oq + '권</span>' +
+        '<button type="button" class="td-x" data-tileclose="1">접기 ✕</button></div>' +
+        tileListHtml(state.tileOpen) + '</div>';
+    }
+    return '<div class="sec" id="sec-tiles"><h2>바로 빌릴 수 있어요</h2>' +
+      '<span class="hint">총 ' + total + '권 · 지금 서가에</span></div>' +
+      '<div class="quick">' + tiles + '</div>' + detail +
+      '<div class="hintline">카드를 누르면 아래에 그 도서관 권별 목록이 펼쳐집니다.</div>';
   }
 
   /* ---------------- 이번 주 반납 · 수령 ---------------- */
@@ -1997,6 +2069,25 @@ window.LibUI = { mount: function(DATA, OV){
     for(i=0;i<jlib.length;i++) jlib[i].addEventListener('click', function(){ jumpLoans('all', {lib: this.getAttribute('data-jumplib')}); });
     var jwho = document.querySelectorAll('[data-jumpwho]');
     for(i=0;i<jwho.length;i++) jwho[i].addEventListener('click', function(){ jumpLoans('all', {who: this.getAttribute('data-jumpwho')}); });
+    /* 퀵 타일 — 누르면 3열 카드 아래에 그 도서관 권별 목록 펼치기/접기 */
+    var tl = document.querySelectorAll('[data-tilelib]');
+    for(i=0;i<tl.length;i++) tl[i].addEventListener('click', function(){
+      var lib = this.getAttribute('data-tilelib');
+      state.tileOpen = (state.tileOpen === lib) ? null : lib;
+      render();
+      scrollToEl('sec-tiles');
+    });
+    var tcl = document.querySelectorAll('[data-tileclose]');
+    for(i=0;i<tcl.length;i++) tcl[i].addEventListener('click', function(){
+      state.tileOpen = null; render(); scrollToEl('sec-tiles');
+    });
+    /* 도서관별 현황의 비치중 줄 — 카드 이동 대신 그 도서관 목록을 펼친다 */
+    var tj = document.querySelectorAll('[data-tilejump]');
+    for(i=0;i<tj.length;i++) tj[i].addEventListener('click', function(ev){
+      if(ev && ev.stopPropagation) ev.stopPropagation();
+      state.tileOpen = this.getAttribute('data-tilejump');
+      render(); scrollToEl('sec-tiles');
+    });
     /* 주간 달력 — 날짜 선택 · 주 이동 */
     var days = document.querySelectorAll('[data-day]');
     for(i=0;i<days.length;i++) days[i].addEventListener('click', function(){ selectDay(this.getAttribute('data-day')); });
