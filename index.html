@@ -171,6 +171,8 @@
   .sec{display:flex;align-items:baseline;justify-content:space-between;gap:0.4rem;
     margin:1.35rem 0 0.55rem;padding:0 0.1rem;font-size:1.14rem;font-weight:900;letter-spacing:-.03em;color:var(--fg)}
   .sec:first-child{margin-top:0.5rem}
+  /* 달력 묶음 상자(#calwrap)가 생겨도 달력 제목 위 여백은 바깥 섹션일 때와 같게 유지 */
+  #calwrap>.sec:first-child{margin-top:1.35rem}
   .sec h2{margin:0;font-size:1.14rem;font-weight:900;letter-spacing:-.03em;display:flex;align-items:center;gap:0.35rem;min-width:0}
   .sec .n{font-size:0.78rem;font-weight:800;background:var(--card2);border:1px solid var(--line);
     color:var(--muted);border-radius:999px;padding:0.04rem 0.38rem;letter-spacing:0}
@@ -1368,7 +1370,10 @@ window.LibUI = { mount: function(DATA, OV){
     }
     return cells;
   }
-  function weekSection(){
+  /* 달력 묶음(제목·달력 카드·선택 날짜 카드·이후 2주)을 한 상자로 감싼다 —
+     주 이동·날짜 선택 때 이 상자만 다시 그려서 화면 스크롤이 튀지 않게 한다. */
+  function weekSection(){ return '<div id="calwrap">' + weekSectionBody() + '</div>'; }
+  function weekSectionBody(){
     var t = today();
     var wk = state.calWeek || 0;
     var dow = t.getDay();
@@ -1993,11 +1998,11 @@ window.LibUI = { mount: function(DATA, OV){
     pickup:{k:'pickup', a:'sec-pickup'},
     overdue:{k:'overdue', a:'sec-overdue'}
   };
-  function scrollToEl(id, tries){
+  function scrollToEl(id, tries, smooth){
     tries = (tries === undefined) ? 15 : tries;
     setTimeout(function(){
       var el = document.getElementById(id);
-      if(!el){ if(tries > 0) scrollToEl(id, tries - 1); return; }
+      if(!el){ if(tries > 0) scrollToEl(id, tries - 1, smooth); return; }
       /* 대출·예약 탭의 필터 바가 상단에 고정돼 있어, 그 높이만큼 비켜서 내린다 */
       var off = 0, f = document.getElementById('loansTop');
       if(f && el !== f){
@@ -2005,8 +2010,9 @@ window.LibUI = { mount: function(DATA, OV){
         if(fr.top <= 2 && fr.height > 0) off = fr.bottom + 6;
       }
       try{
-        var y = window.pageYOffset + el.getBoundingClientRect().top - off;
-        window.scrollTo(0, Math.max(0, Math.round(y)));
+        var y = Math.max(0, Math.round(window.pageYOffset + el.getBoundingClientRect().top - off));
+        if(smooth){ window.scrollTo({top:y, behavior:'smooth'}); return; }
+        window.scrollTo(0, y);
       }catch(e){ try{ el.scrollIntoView(); }catch(e2){} }
     }, 60);
   }
@@ -2023,12 +2029,23 @@ window.LibUI = { mount: function(DATA, OV){
   }
   /* ---------------- 주간 달력 주 이동 (‹ › 버튼 · 실시간 좌우 슬라이드 공용) ---------------- */
   var calSwipeAt = 0;   /* 마지막 스와이프 시각 — 스와이프 직후 따라오는 클릭을 무시한다 */
+  /* 달력 상자(#calwrap)만 그 자리에서 다시 그린다 — 홈 전체 innerHTML 재렌더(=스크롤 튐) 없이
+     주·선택 날짜만 바뀌므로, 어느 위치에서 스와이프해도 보던 화면 위치가 그대로 유지된다. */
+  function repaintCalendar(){
+    var wrap = document.getElementById('calwrap');
+    if(state.tab !== 'todo' || !wrap){ render(); return false; }
+    var y = 0;
+    try{ y = window.pageYOffset || 0; }catch(e){}
+    wrap.innerHTML = weekSectionBody();
+    bindCalendar();
+    try{ if(Math.abs((window.pageYOffset || 0) - y) > 1) window.scrollTo(0, y); }catch(e){}
+    return true;
+  }
   function shiftWeek(delta){
     if(!delta) return;
     state.calWeek = (state.calWeek || 0) + delta;
     state.calSel = '';
-    render();
-    scrollToEl('calcard');
+    repaintCalendar();   /* 주만 바뀐다 — 스크롤은 건드리지 않는다 */
   }
   /* 왼쪽으로 밀면(dx<0) 다음 주 = +1, 오른쪽으로 밀면 이전 주 = -1. 탭·세로 스크롤은 0 */
   function calSwipeDelta(dx, dy){
@@ -2172,8 +2189,8 @@ window.LibUI = { mount: function(DATA, OV){
       state.calWeek = Math.round((wkStart - tStart) / 604800000);
     }
     state.calSel = ds;
-    render();
-    scrollToEl('calcard');
+    repaintCalendar();
+    scrollToEl('calcard', undefined, true);   /* 날짜를 직접 골랐을 때만 달력 카드를 화면 상단으로 부드럽게 */
   }
 
   /* ---------------- render ---------------- */
@@ -2196,6 +2213,21 @@ window.LibUI = { mount: function(DATA, OV){
     if(!box) return;
     box.innerHTML = list.length ? '<div class="cardgrid">' + list.map(function(b){ return bookCard(b, kind); }).join('') + '</div>'
       : '<div class="empty">표시할 책이 없습니다</div>';
+  }
+  /* 달력 상자 안쪽만 다시 그렸을 때(repaintCalendar) 그 부분의 클릭·스와이프를 다시 결선한다 */
+  function bindCalendar(){
+    var i;
+    var days = document.querySelectorAll('#calwrap [data-day]');
+    for(i=0;i<days.length;i++) days[i].addEventListener('click', function(){
+      if(calSwipeAt && Date.now() - calSwipeAt < 600){ calSwipeAt = 0; return; }  /* 스와이프 직후의 클릭만 무시 */
+      selectDay(this.getAttribute('data-day'));
+    });
+    var cws = document.querySelectorAll('#calwrap [data-calweek]');
+    for(i=0;i<cws.length;i++) cws[i].addEventListener('click', function(){
+      shiftWeek(parseInt(this.getAttribute('data-calweek'), 10) || 0);
+    });
+    var calstrip = document.querySelector('#calcard .cal-days');
+    if(calstrip) bindCalSwipe(calstrip);
   }
   function bind(){
     var i;
@@ -2238,17 +2270,7 @@ window.LibUI = { mount: function(DATA, OV){
       render(); scrollToEl('sec-tiles');
     });
     /* 주간 달력 — 날짜 선택 · 주 이동(버튼·좌우 스와이프) */
-    var days = document.querySelectorAll('[data-day]');
-    for(i=0;i<days.length;i++) days[i].addEventListener('click', function(){
-      if(calSwipeAt && Date.now() - calSwipeAt < 600){ calSwipeAt = 0; return; }  /* 스와이프 직후의 클릭만 무시 */
-      selectDay(this.getAttribute('data-day'));
-    });
-    var cws = document.querySelectorAll('[data-calweek]');
-    for(i=0;i<cws.length;i++) cws[i].addEventListener('click', function(){
-      shiftWeek(parseInt(this.getAttribute('data-calweek'), 10) || 0);
-    });
-    var calstrip = document.querySelector('#calcard .cal-days');
-    if(calstrip) bindCalSwipe(calstrip);
+    bindCalendar();
     /* 할 일 항목 제외 */
     if(state.tab === 'todo' || state.tab === 'recs' || state.tab === 'newb'){
       var tex = document.querySelectorAll('[data-ex]');
