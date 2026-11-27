@@ -2113,6 +2113,7 @@ window.LibUI = { mount: function(DATA, OV){
       if(strip.classList) strip.classList.remove('dragging');
       if(!wasDrag) return;
       if(Math.abs(dx) >= 10) calSwipeAt = Date.now();            /* 드래그 뒤 따라오는 클릭은 날짜선택 아님 */
+      if(Date.now() - st.lt > 120) vx = 0;                       /* 멈춰 있다 떼면 플릭 아님 */
       var dir = cancelled ? 0 : calDragTarget(dx, dy, vx, width());
       if(!dir){ home(200); return; }                             /* 임계 미만 → 제자리 스냅 복귀 */
       snapTo(dir);
