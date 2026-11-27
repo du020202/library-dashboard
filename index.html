@@ -673,9 +673,9 @@
   <div class="lockcard">
     <div class="lockicon">🔐</div>
     <div class="lockttl">도서관 대시보드</div>
-    <div class="locksub" id="lockSub">6자리 비밀번호를 입력하면 열립니다</div>
+    <div class="locksub" id="lockSub">비밀번호를 입력하면 열립니다</div>
     <input id="pinInput" class="pininput" type="tel" inputmode="numeric" autocomplete="off"
-           maxlength="6" pattern="[0-9]*" placeholder="••••••" aria-label="비밀번호 6자리">
+           maxlength="12" pattern="[0-9]*" placeholder="•••••" aria-label="비밀번호">
     <label class="lockchk"><input type="checkbox" id="rememberChk" checked> 이 기기에서 기억하기</label>
     <button id="unlockBtn" class="lockbtn">열기</button>
     <div class="lockerr" id="lockErr"></div>
@@ -2260,6 +2260,7 @@ window.LibUI = { mount: function(DATA, OV){
   }
 
   /* ---------- 화면 ---------- */
+  var PINLEN = 5;   /* 현재 PIN 자리수 — 자리수를 바꾸면 이 값만 고친다(2026-11-27 5자리) */
   var S = {pin:null, mounted:false, retryPush:false, fails:0, lockUntil:0};
   var PILL_T = null;
   function say(msg){
@@ -2302,7 +2303,7 @@ window.LibUI = { mount: function(DATA, OV){
     if(sub){
       sub.textContent = ls(K_PIN)
         ? '이 기기에는 비밀번호가 기억돼 있습니다. 다음 접속 때 자동으로 열립니다.'
-        : '6자리 비밀번호를 입력하면 열립니다';
+        : '비밀번호를 입력하면 열립니다';
     }
     try{ if(pin && pin.focus) setTimeout(function(){ pin.focus(); }, 120); }catch(e){}
   }
@@ -2502,10 +2503,10 @@ window.LibUI = { mount: function(DATA, OV){
     var pin = $('pinInput');
     if(pin){
       pin.addEventListener('input', function(){
-        var v = String(pin.value).replace(/[^0-9]/g, '').slice(0, 6);
+        var v = String(pin.value).replace(/[^0-9]/g, '').slice(0, 12);
         pin.value = v;
         showErr('');
-        if(v.length === 6) submitPin();
+        if(v.length === PINLEN) submitPin();
       });
       pin.addEventListener('keydown', function(e){ if(e.key === 'Enter') submitPin(); });
     }
@@ -2537,7 +2538,7 @@ window.LibUI = { mount: function(DATA, OV){
     if(submitting) return;
     var el = $('pinInput');
     var v = el ? String(el.value).replace(/[^0-9]/g, '') : '';
-    if(v.length !== 6){ showErr('6자리 숫자를 입력해 주세요'); return; }
+    if(v.length < 4){ showErr('비밀번호 숫자를 입력해 주세요'); return; }
     submitting = true;
     doUnlock(v, false).then(function(){ submitting = false; }, function(){ submitting = false; });
   }
@@ -2577,11 +2578,11 @@ window.LibUI = { mount: function(DATA, OV){
     var chk = $('rememberChk');
     if(chk) chk.checked = rem;
     var saved = ls(K_PIN);
-    if(rem && saved && saved.length === 6){
+    if(rem && saved && saved.length >= 4){
       var sub = $('lockSub'); if(sub) sub.textContent = '이 기기에서 자동으로 여는 중…';
       doUnlock(saved, true).then(function(ok){
         if(!ok){
-          var s2 = $('lockSub'); if(s2) s2.textContent = '6자리 비밀번호를 입력하면 열립니다';
+          var s2 = $('lockSub'); if(s2) s2.textContent = '비밀번호를 입력하면 열립니다';
           var p = $('pinInput'); if(p && p.focus) p.focus();
         }
       });
