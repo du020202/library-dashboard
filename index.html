@@ -317,8 +317,14 @@
     border:1px solid var(--line);border-radius:0.6rem;width:2.1rem;height:2.1rem;cursor:pointer;line-height:1}
   .cal-nav:disabled{opacity:.35;cursor:default}
   .cal-range{font-size:0.8rem;font-weight:900;color:var(--muted)}
-  .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:0.1rem;touch-action:pan-y;
-    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+  /* 3주 트랙(이전 주 · 현재 주 · 다음 주) — 손가락을 따라 실시간으로 움직이는 슬라이드 */
+  .cal-days{position:relative;overflow:hidden;touch-action:pan-y;overscroll-behavior-x:contain;
+    -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;cursor:grab}
+  .cal-track{display:flex;width:100%;transform:translate3d(-100%,0,0);will-change:transform;
+    transition:transform 0.26s cubic-bezier(.22,.61,.36,1)}
+  .cal-days.dragging .cal-track{transition:none}   /* 드래그 중에는 손가락에 1:1로 붙는다 */
+  .cal-days.dragging{cursor:grabbing}
+  .cal-page{flex:0 0 100%;min-width:0;display:grid;grid-template-columns:repeat(7,1fr);gap:0.1rem}
   .cal-cell{display:flex;flex-direction:column;align-items:center;gap:0.28rem;background:none;border:0;
     padding:0.15rem 0;font-family:inherit;border-radius:0.8rem;cursor:pointer;
     -webkit-user-select:none;user-select:none;touch-action:pan-y}
@@ -1340,6 +1346,28 @@ window.LibUI = { mount: function(DATA, OV){
     });
     return ev.filter(function(e){ return !!e.date; });
   }
+  /* 한 주 7칸. side=true 면 옆 페이지(미리보기)라 선택·오늘 표시와 포커스를 뺀다 */
+  function calGrid(start, sel, tStr, ev, side){
+    var cells = '';
+    for(var i = 0; i < 7; i++){
+      var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
+      var ds = ymd(d);
+      var dayEv = ev.filter(function(x){ return x.date === ds; });
+      var types = [];
+      dayEv.forEach(function(x){ if(types.indexOf(x.dot) < 0) types.push(x.dot); });
+      var dots = types.slice(0, 3).map(function(k){ return '<i class="dot ' + k + '"></i>'; }).join('');
+      var dw = d.getDay();
+      var isSel = !side && ds === sel;
+      cells += '<button type="button" class="cal-cell' + (!side && ds === tStr ? ' cell-today' : '') + (isSel ? ' cell-sel' : '') + '" ' +
+        'data-day="' + ds + '" aria-pressed="' + (isSel ? 'true' : 'false') + '"' +
+        (side ? ' tabindex="-1" aria-hidden="true"' : '') + ' ' +
+        'aria-label="' + md(ds) + ' ' + WD[dw] + '요일 ' + (dayEv.length ? dayEv.length + '건' : '일정 없음') + '">' +
+        '<span class="cal-dow' + (dw === 0 ? ' sun' : (dw === 6 ? ' sat' : '')) + '">' + WD[dw] + '</span>' +
+        '<span class="cal-num">' + d.getDate() + '</span>' +
+        '<span class="dots">' + dots + '</span></button>';
+    }
+    return cells;
+  }
   function weekSection(){
     var t = today();
     var wk = state.calWeek || 0;
@@ -1363,22 +1391,12 @@ window.LibUI = { mount: function(DATA, OV){
       }
     }
 
-    var cells = '';
-    for(var i = 0; i < 7; i++){
-      var d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + i);
-      var ds = ymd(d);
-      var dayEv = inWeek.filter(function(x){ return x.date === ds; });
-      var types = [];
-      dayEv.forEach(function(x){ if(types.indexOf(x.dot) < 0) types.push(x.dot); });
-      var dots = types.slice(0, 3).map(function(k){ return '<i class="dot ' + k + '"></i>'; }).join('');
-      var dw = d.getDay();
-      cells += '<button type="button" class="cal-cell' + (ds === tStr ? ' cell-today' : '') + (ds === sel ? ' cell-sel' : '') + '" ' +
-        'data-day="' + ds + '" aria-pressed="' + (ds === sel ? 'true' : 'false') + '" ' +
-        'aria-label="' + md(ds) + ' ' + WD[dw] + '요일 ' + (dayEv.length ? dayEv.length + '건' : '일정 없음') + '">' +
-        '<span class="cal-dow' + (dw === 0 ? ' sun' : (dw === 6 ? ' sat' : '')) + '">' + WD[dw] + '</span>' +
-        '<span class="cal-num">' + d.getDate() + '</span>' +
-        '<span class="dots">' + dots + '</span></button>';
-    }
+    /* 3주 트랙: 가운데가 지금 보고 있는 주, 양옆은 밀어서 넘어갈 이전·다음 주 */
+    var prevWkStart = new Date(start.getFullYear(), start.getMonth(), start.getDate() - 7);
+    var nextWkStart = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 7);
+    var pages = '<div class="cal-page" data-calpage="-1">' + calGrid(prevWkStart, '', tStr, ev, true) + '</div>' +
+      '<div class="cal-page" data-calpage="0">' + calGrid(start, sel, tStr, ev, false) + '</div>' +
+      '<div class="cal-page" data-calpage="1">' + calGrid(nextWkStart, '', tStr, ev, true) + '</div>';
     var wkLabel = wk === 0 ? '이번 주' : (wk === 1 ? '다음 주' : (wk === -1 ? '지난 주' : (wk > 0 ? wk + '주 후' : Math.abs(wk) + '주 전')));
     var h = '<div class="sec"><h2>반납·수령 달력</h2><span class="hint">' + wkLabel + '</span></div>';
     h += '<div class="card cal" id="calcard">' +
@@ -1387,7 +1405,7 @@ window.LibUI = { mount: function(DATA, OV){
         '<span class="cal-range">' + md(sStr) + ' ~ ' + md(eStr) + '</span>' +
         '<button type="button" class="cal-nav" data-calweek="1" aria-label="다음 주 보기">›</button>' +
       '</div>' +
-      '<div class="cal-days">' + cells + '</div>' +
+      '<div class="cal-days" id="calStrip"><div class="cal-track" id="calTrack">' + pages + '</div></div>' +
       '<div class="cal-legend"><span><i class="dot red"></i>반납</span>' +
       '<span><i class="dot mint"></i>수령</span><span><i class="dot amber"></i>예약만기</span></div>' +
       '<div class="cal-hint">좌우로 밀어 주 이동 · 날짜를 눌러 그날 일정 보기</div></div>';
@@ -2003,7 +2021,7 @@ window.LibUI = { mount: function(DATA, OV){
     render();
     scrollToEl(extra.anchor || spec.a);
   }
-  /* ---------------- 주간 달력 주 이동 (‹ › 버튼·좌우 스와이프 공용) ---------------- */
+  /* ---------------- 주간 달력 주 이동 (‹ › 버튼 · 실시간 좌우 슬라이드 공용) ---------------- */
   var calSwipeAt = 0;   /* 마지막 스와이프 시각 — 스와이프 직후 따라오는 클릭을 무시한다 */
   function shiftWeek(delta){
     if(!delta) return;
@@ -2018,29 +2036,130 @@ window.LibUI = { mount: function(DATA, OV){
     if(Math.abs(dy) >= Math.abs(dx) * 0.7) return 0;  /* 세로로 더 움직였으면 스크롤 의도 */
     return dx < 0 ? 1 : -1;
   }
-  function bindCalSwipe(el){
-    var x0 = 0, y0 = 0, live = false;
-    el.addEventListener('touchstart', function(e){
-      calSwipeAt = 0;   /* 새 터치 = 이전 스와이프 뒤 따라오는 클릭 무시 플래그는 끝난 것 */
-      if(!e.touches || e.touches.length !== 1){ live = false; return; }
-      x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; live = true;
-    }, {passive:true});
-    el.addEventListener('touchmove', function(e){
-      if(!live || !e.touches || e.touches.length !== 1) return;
-      var dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
-      if(calSwipeDelta(dx, dy) && e.cancelable) e.preventDefault();  /* 세로 스크롤·뒤로가기 대신 주 이동 */
-    }, {passive:false});
-    el.addEventListener('touchend', function(e){
-      if(!live) return;
-      live = false;
-      var t = e.changedTouches && e.changedTouches[0];
-      if(!t) return;
-      var d = calSwipeDelta(t.clientX - x0, t.clientY - y0);
-      if(!d) return;
+  /* 손을 뗈 때 넘어갈 주: 폭의 22% 이상 밀었거나 짧고 빠른 플릭이면 이동, 아니면 0(제자리) */
+  function calDragTarget(dx, dy, vx, w){
+    var d = calSwipeDelta(dx, dy);
+    if(!d) return 0;
+    if(Math.abs(dx) >= w * 0.22) return d;
+    if(Math.abs(vx) >= 0.45) return d;               /* 40px 이상 + 빠른 플릭 */
+    return 0;
+  }
+  /* 3주 트랙을 손가락에 1:1로 붙여 끌다가, 손을 떼면 다음/이전 주로 스냅하거나 제자리로 돌아온다 */
+  function bindCalSwipe(strip){
+    var track = strip.querySelector ? strip.querySelector('.cal-track') : null;
+    if(!track) return;
+    var BASE = 'translate3d(-100%,0,0)';
+    var st = {on:false, x0:0, y0:0, dx:0, dy:0, lock:'', lx:0, lt:0, vx:0, dragged:false};
+    var pending = null;          /* 스냅 애니메이션 뒤 실행될 주 이동 */
+    var pid = null;
+
+    function width(){ return strip.clientWidth || 1; }
+    function live(dx){
+      track.style.transition = 'none';                       /* 드래그 중 = 손가락을 그대로 따라간다 */
+      track.style.transform = 'translate3d(calc(-100% + ' + (Math.round(dx * 10) / 10) + 'px),0,0)';
+    }
+    function home(ms){
+      track.style.transition = 'transform ' + ms + 'ms cubic-bezier(.22,.61,.36,1)';
+      track.style.transform = BASE;
+    }
+    function snapTo(dir){
+      track.style.transition = 'transform 250ms cubic-bezier(.22,.61,.36,1)';
+      track.style.transform = 'translate3d(' + (dir > 0 ? -200 : 0) + '%,0,0)';
       calSwipeAt = Date.now();
-      shiftWeek(d);
-    });
-    el.addEventListener('touchcancel', function(){ live = false; });
+      var tm = null, done = false;
+      function go(){
+        if(done) return;
+        done = true;
+        if(tm) clearTimeout(tm);
+        pending = null;
+        shiftWeek(dir);                                       /* 트랙을 새 3주로 재배치 */
+      }
+      tm = setTimeout(go, 270);
+      track.addEventListener('transitionend', function(ev){
+        if(ev && ev.propertyName && ev.propertyName !== 'transform') return;
+        go();
+      });
+      pending = {go: go};
+    }
+    function start(x, y){
+      if(pending){ var p = pending; pending = null; p.go(); return; }   /* 스냅 중 재터치 = 스냅 먼저 완료 */
+      st.on = true; st.x0 = x; st.y0 = y;
+      st.dx = 0; st.dy = 0; st.lock = ''; st.dragged = false;
+      st.lx = x; st.lt = Date.now(); st.vx = 0;
+      calSwipeAt = 0;   /* 새 터치 = 이전 스와이프 뒤 따라오는 클릭 무시 플래그는 끝난 것 */
+    }
+    function move(x, y){
+      if(!st.on) return;
+      var dx = x - st.x0, dy = y - st.y0;
+      st.dx = dx; st.dy = dy;
+      if(!st.lock){
+        if(Math.abs(dx) < 4 && Math.abs(dy) < 4) return;         /* 4px 데드존 */
+        st.lock = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y';
+        if(st.lock === 'y'){ st.on = false; return; }            /* 세로는 페이지 스크롤에 양보 */
+      }
+      if(st.lock !== 'x') return;
+      st.dragged = true;
+      var now = Date.now(), dt = now - st.lt;
+      if(dt > 0) st.vx = (x - st.lx) / dt;                       /* px/ms */
+      st.lx = x; st.lt = now;
+      if(strip.classList) strip.classList.add('dragging');
+      live(dx);
+    }
+    function finish(cancelled){
+      if(!st.on) return;
+      var wasDrag = st.dragged && st.lock === 'x';
+      var dx = st.dx, dy = st.dy, vx = st.vx;
+      st.on = false;
+      if(strip.classList) strip.classList.remove('dragging');
+      if(!wasDrag) return;
+      if(Math.abs(dx) >= 10) calSwipeAt = Date.now();            /* 드래그 뒤 따라오는 클릭은 날짜선택 아님 */
+      var dir = cancelled ? 0 : calDragTarget(dx, dy, vx, width());
+      if(!dir){ home(200); return; }                             /* 임계 미만 → 제자리 스냅 복귀 */
+      snapTo(dir);
+    }
+
+    if(window.PointerEvent){
+      strip.addEventListener('pointerdown', function(e){
+        if(e.pointerType === 'mouse' && e.button) return;
+        if(pid !== null) return;
+        pid = e.pointerId;
+        /* setPointerCapture 는 쓰지 않는다 — 캐프처하면 셀에서 시작한 마우스 클릭이
+           스트립으로 재타깃돼 날짜 셀 click 이 사라진다. 터치는 브라우저가 이미 암시적으로 잡아준다. */
+        start(e.clientX, e.clientY);
+      });
+      strip.addEventListener('pointermove', function(e){
+        if(pid === null || e.pointerId !== pid) return;
+        move(e.clientX, e.clientY);
+      });
+      strip.addEventListener('pointerup', function(e){
+        if(pid === null || e.pointerId !== pid) return;
+        pid = null; finish(false);
+      });
+      strip.addEventListener('pointercancel', function(){
+        if(pid === null) return;
+        pid = null; finish(true);
+      });
+      /* 가로 드래그로 확정된 뒤에는 브라우저 가로 제스처/오버스크롤에 넘기지 않는다 */
+      strip.addEventListener('touchmove', function(e){
+        if(st.lock === 'x' && e.cancelable) e.preventDefault();
+      }, {passive:false});
+    }else{
+      strip.addEventListener('touchstart', function(e){
+        if(!e.touches || e.touches.length !== 1) return;
+        start(e.touches[0].clientX, e.touches[0].clientY);
+      }, {passive:true});
+      strip.addEventListener('touchmove', function(e){
+        if(!e.touches || e.touches.length !== 1) return;
+        move(e.touches[0].clientX, e.touches[0].clientY);
+        if(st.lock === 'x' && e.cancelable) e.preventDefault();
+      }, {passive:false});
+      strip.addEventListener('touchend', function(e){
+        var t = e.changedTouches && e.changedTouches[0];
+        if(t){ st.dx = t.clientX - st.x0; st.dy = t.clientY - st.y0; }
+        finish(false);
+      });
+      strip.addEventListener('touchcancel', function(){ finish(true); });
+    }
   }
   /* 달력에서 날짜 선택 — 다른 주의 날짜면 그 주로 이동 */
   function selectDay(ds){
