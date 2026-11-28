@@ -1853,7 +1853,8 @@ window.LibUI = { mount: function(DATA, OV){
     h += '<div class="sec"><h2>도서관 3곳 규정</h2></div>';
     h += DATA.libs.map(function(l){
       var rows = l.rows.map(function(p){
-        return '<dt>' + esc(p[0]) + '</dt><dd>' + esc(p[1]) + '</dd>';
+        /* 메모의 **강조** 를 굵게 (esc 로만 처리해 별표가 그대로 보이던 것을 고침 — 2026-11-28) */
+        return '<dt>' + esc(p[0]) + '</dt><dd>' + noteHtml(p[1]) + '</dd>';
       }).join('');
       return '<div class="libc"><div class="ln">' + libPill(l.lib) + esc(l.lib) + '</div><dl>' + rows + '</dl></div>';
     }).join('');
