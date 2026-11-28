@@ -1876,7 +1876,7 @@ window.LibUI = { mount: function(DATA, OV){
     try{ TOAST_T = setTimeout(function(){ t.className = 'toast'; }, 2800); }catch(e){}
   }
   /* 시리즈 기본명 매칭 — 카드 제목의 권수·부제를 떼고 모니터링 목록과 대조한다.
-     (『최태성의 한능검 한국사 15』는 이미 시리즈 탭에 있는 『최태성의 한능검 한국사』와 같은 시리즈) */
+     (같은 시리즈의 다음 권이면 이미 모니터링 중인 것으로 본다) */
   function normKey(s){ return String(s == null ? '' : s).replace(/[^0-9a-z가-힣]/gi, '').toLowerCase(); }
   function baseKeyOf(name){
     var t = String(name == null ? '' : name).replace(/\s+/g, ' ').replace(/^\s+/, '').replace(/\s+$/, '');
