@@ -552,6 +552,20 @@
   .availtag{font-size:0.74rem;font-weight:800;padding:0.16rem 0.42rem;border-radius:999px;background:var(--card2);
     border:1px solid var(--line);color:var(--muted);white-space:nowrap}
   .availtag.pre{color:var(--warnFg);border-color:var(--warnBg);background:var(--warnBg)}
+  /* 읽음 여부 · 현재 대출/예약 배지 (2026-11-28) */
+  .bkb{display:flex;align-items:center;gap:0.26rem;flex-wrap:wrap;margin:0 0 0.32rem}
+  .rbadge{display:inline-flex;align-items:center;gap:0.16rem;font-size:0.78rem;font-weight:900;line-height:1.2;
+    padding:0.2rem 0.48rem;border-radius:999px;border:1px solid var(--line);background:var(--card2);color:var(--muted);
+    white-space:nowrap}
+  .rbadge.loan{background:var(--hotBg);color:var(--hotFg);border-color:var(--hotBg)}
+  .rbadge.wait{background:var(--warnBg);color:var(--warnFg);border-color:var(--warnBg)}
+  .rbadge.read{background:var(--okBg);color:var(--okFg);border-color:var(--okBg)}
+  .rbadge.unread{background:var(--chipInfoBg);color:var(--chipInfoFg);border-color:var(--chipInfoBg)}
+  .rbadge.prog{background:transparent;color:var(--muted);font-weight:800;font-size:0.73rem;padding-left:0.1rem}
+  .bkf{display:flex;gap:0.3rem;overflow-x:auto;scrollbar-width:none;margin:0.45rem 0.1rem 0.15rem}
+  .bkf::-webkit-scrollbar{display:none}
+  .sbtn.rd{background:var(--card2);color:var(--fg);border-color:var(--line);font-weight:900}
+  .sbtn.rd.done{background:var(--okBg);color:var(--okFg);border-color:var(--okBg)}
 
   /* ---------------- 하단 5탭 바 ---------------- */
   .tabbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:60;
@@ -701,7 +715,7 @@
   <div class="sheetcard" role="dialog" aria-modal="true" aria-labelledby="sheetTtl">
     <div class="sheethead"><b id="sheetTtl">⚙️ 동기화</b>
       <button class="sheetx" data-close="1" aria-label="닫기">✕</button></div>
-    <p class="sheetp">제외·복원·새 시리즈·모니터링 추가가 <b>이 저장소에 바로 커밋</b>되도록
+    <p class="sheetp">제외·복원·새 시리즈·모니터링 추가·<b>읽음 표시</b>가 <b>이 저장소에 바로 커밋</b>되도록
       GitHub 토큰을 한 번만 등록하세요.</p>
     <div class="syncstate" id="syncState">—</div>
     <label class="fldlbl" for="patInput">GitHub Fine-grained PAT</label>
@@ -937,11 +951,13 @@ window.LibUI = { mount: function(DATA, OV){
     {id:'newb', ic:'🆕', label:'신간'}
   ];
   var state = {tab:'todo', by:'lib', lib:'전체', who:'전체', loanKind:'all', sfilter:'전체', q:'', limit:24,
-               addOpen:false, selMode:false, sel:{}, calWeek:0, calSel:'', tileOpen:null};
+               addOpen:false, selMode:false, sel:{}, calWeek:0, calSel:'', tileOpen:null, bkFilter:'all'};
 
   /* ---------------- 직접 추가·제외 (localStorage 유지) ---------------- */
   var CUSTOM_KEY = 'libdash-custom-series';
   var EXCL_KEY = 'libdash-excluded-series';
+  var READ_KEY = 'libdash-read-books';
+  var UNREAD_KEY = 'libdash-unread-books';
   var BY_KEY = 'libdash-by';
   function readArr(key){
     try{
@@ -953,15 +969,21 @@ window.LibUI = { mount: function(DATA, OV){
   }
   var custom = (OV && OV.added) ? OV.added.slice() : readArr(CUSTOM_KEY);
   var excluded = (OV && OV.excluded) ? OV.excluded.slice() : readArr(EXCL_KEY);
+  var readBooks = (OV && OV.readBooks) ? OV.readBooks.slice() : readArr(READ_KEY);
+  var unreadBooks = (OV && OV.unreadBooks) ? OV.unreadBooks.slice() : readArr(UNREAD_KEY);
   function persistOverrides(){
     try{
       localStorage.setItem(CUSTOM_KEY, JSON.stringify(custom));
       localStorage.setItem(EXCL_KEY, JSON.stringify(excluded));
+      localStorage.setItem(READ_KEY, JSON.stringify(readBooks));
+      localStorage.setItem(UNREAD_KEY, JSON.stringify(unreadBooks));
     }catch(e){}
-    try{ if(window.LibSync) window.LibSync.changed({excluded:excluded, added:custom}); }catch(e){}
+    try{ if(window.LibSync) window.LibSync.changed({excluded:excluded, added:custom,
+                                                     readBooks:readBooks, unreadBooks:unreadBooks}); }catch(e){}
   }
   function saveCustom(){ persistOverrides(); }
   function saveExcluded(){ persistOverrides(); }
+  function saveRead(){ persistOverrides(); }
   try{ var bySaved = localStorage.getItem(BY_KEY); if(bySaved === 'who' || bySaved === 'lib') state.by = bySaved; }catch(e){}
   function saveBy(){ try{ localStorage.setItem(BY_KEY, state.by); }catch(e){} }
   function isExcluded(n){ return excluded.indexOf(n) >= 0; }
@@ -1853,19 +1875,111 @@ window.LibUI = { mount: function(DATA, OV){
     try{ clearTimeout(TOAST_T); }catch(e){}
     try{ TOAST_T = setTimeout(function(){ t.className = 'toast'; }, 2800); }catch(e){}
   }
-  function isMonitored(name){
-    var i;
-    for(i = 0; i < custom.length; i++){ if(custom[i].name === name) return true; }
-    var src = DATA.series || [];
-    for(i = 0; i < src.length; i++){ if(src[i].name === name) return true; }
-    return false;
+  /* 시리즈 기본명 매칭 — 카드 제목의 권수·부제를 떼고 모니터링 목록과 대조한다.
+     (『최태성의 한능검 한국사 15』는 이미 시리즈 탭에 있는 『최태성의 한능검 한국사』와 같은 시리즈) */
+  function normKey(s){ return String(s == null ? '' : s).replace(/[^0-9a-z가-힣]/gi, '').toLowerCase(); }
+  function baseKeyOf(name){
+    var t = String(name == null ? '' : name).replace(/\s+/g, ' ').replace(/^\s+/, '').replace(/\s+$/, '');
+    t = t.replace(/^\s*[([][^)\]]*[)\]]\s*/, '');          /* 앞 괄호 부제 "(레벨업)" 같은 접두 */
+    var cut = t.search(/[:：]/);
+    if(cut > 0) t = t.slice(0, cut);                        /* " : 부제" */
+    t = t.replace(/[\s.]*\d{1,3}\s*[-~·]\s*\d{1,3}\s*$/, '');
+    t = t.replace(/[\s.]*\d{1,3}\s*(권)?\s*$/, '');        /* 끝 권수 */
+    return normKey(t);
   }
-  function addMonitor(name, memo){
-    if(isMonitored(name)){ toast('이미 모니터링 목록에 있는 책이에요.'); return; }
+  function keyScore(a, b){
+    if(!a || !b) return 0;
+    if(a === b) return 3;
+    var lo = a.length <= b.length ? a : b, hi = a.length <= b.length ? b : a;
+    if(lo.length < 5 || lo.length / hi.length < 0.35) return 0;
+    if(hi.indexOf(lo) === 0) return 2;
+    if(hi.lastIndexOf(lo) === hi.length - lo.length) return 1;
+    return 0;
+  }
+  function monitoredSeries(b){
+    var i, src = DATA.series || [], best = '', bs = 0, nm;
+    var k = (b && typeof b === 'object') ? (b.sk || baseKeyOf(b.t)) : baseKeyOf(b);
+    var exact = (b && typeof b === 'object') ? b.t : String(b || '');
+    if(b && typeof b === 'object' && b.mon) return b.mon;    /* 빌드 때 대조해 둔 시리즈명 */
+    for(i = 0; i < src.length; i++){
+      if(src[i].name === exact) return src[i].name;
+      if(src[i].bk === k || src[i].bk2 === k) return src[i].name;
+    }
+    for(i = 0; i < custom.length; i++){ if(custom[i].name === exact) return custom[i].name; }
+    for(i = 0; i < src.length; i++){
+      var s1 = Math.max(keyScore(k, src[i].bk || ''), keyScore(k, src[i].bk2 || ''));
+      if(s1 > bs || (s1 && s1 === bs && String(src[i].name || '').length > best.length)){ bs = s1; best = src[i].name || ''; }
+    }
+    for(i = 0; i < custom.length; i++){
+      nm = custom[i].name || '';
+      var s2 = keyScore(k, baseKeyOf(nm));
+      if(s2 > bs || (s2 && s2 === bs && nm.length > best.length)){ bs = s2; best = nm; }
+    }
+    return best;
+  }
+  function isMonitored(name){ return !!monitoredSeries(name); }
+  function addMonitor(b, memo){
+    var hit = monitoredSeries(b);
+    var isObj = !!(b && typeof b === 'object');
+    var name = isObj ? (b.mon || b.sn || b.t || '') : String(b || '');
+    if(hit){ toast('이미 「' + hit + '」 시리즈를 모니터링 중이에요.'); return; }
+    /* 중복 방어 — 이름 모양이 달라도 같은 시리즈면 리스트에 또 넣지 않는다 */
+    var nk = baseKeyOf(name), i;
+    for(i = 0; i < custom.length; i++){
+      if(keyScore(nk, baseKeyOf(custom[i].name))){ toast('이미 모니터링 목록에 있는 시리즈예요.'); return; }
+    }
     custom.push({name:name, start:0, target:0, memo:memo || '추천·신간에서 추가'});
     saveCustom();
-    toast('시리즈 탭 모니터링 목록에 추가했어요.');
+    toast('「' + name + '」 시리즈를 모니터링에 추가했어요.');
     render();
+  }
+  /* 「✓ 모니터링 중」을 누르면 시리즈 탭에서 그 시리즈를 찾아 보여 준다 */
+  function jumpSeries(name){
+    state.tab = 'series'; state.sfilter = '전체'; state.q = String(name || ''); state.limit = 30;
+    renderTabs();
+    render();
+    try{ window.scrollTo({top:0, behavior:'smooth'}); }catch(e){ window.scrollTo(0,0); }
+  }
+
+  /* ---------------- 읽음 여부 · 직접 '읽음 표시' ---------------- */
+  function bookKey(b){
+    if(b && b.key) return b.key;
+    return 't:' + String((b && b.t) || '').replace(/[^0-9a-z가-힣]/gi, '').toLowerCase();
+  }
+  function bookByKey(k){
+    var lists = [DATA.recs || [], DATA.newbooks || []], i, j;
+    for(i = 0; i < lists.length; i++){
+      for(j = 0; j < lists[i].length; j++){ if(bookKey(lists[i][j]) === k) return lists[i][j]; }
+    }
+    return null;
+  }
+  function isBookRead(b){
+    var k = bookKey(b);
+    if(readBooks.indexOf(k) >= 0) return true;      /* 직접 읽음 표시 */
+    if(unreadBooks.indexOf(k) >= 0) return false;   /* 직접 안 읽었음으로 되돌림 */
+    return !!(b && b.rd && b.rd.read);              /* 도서관 대출이력 */
+  }
+  function setBookRead(b, want){
+    var k = bookKey(b);
+    readBooks = readBooks.filter(function(x){ return x !== k; });
+    unreadBooks = unreadBooks.filter(function(x){ return x !== k; });
+    if(want) readBooks.push(k);
+    else if(b && b.rd && b.rd.read) unreadBooks.push(k);
+    saveRead();
+    toast(want ? '『' + b.t + '』를 읽음으로 표시했어요.' : '『' + b.t + '』를 안 읽은 책으로 되돌렸어요.');
+    render();
+  }
+  function bookBadges(b){
+    var st = b.st || null, rd = b.rd || {}, read = isBookRead(b);
+    var h = '<div class="bkb">';
+    if(st) h += '<span class="rbadge ' + (st.kind === 'loan' ? 'loan' : 'wait') + '">' + esc(st.label || '') + '</span>';
+    else if(read) h += '<span class="rbadge read">✅ ' + (rd.read ? '이미 읽음' : '읽음 표시') + '</span>';
+    else h += '<span class="rbadge unread">🆕 미독</span>';
+    if(rd.prog) h += '<span class="rbadge prog" title="' + esc(rd.series + (rd.status ? ' · ' + rd.status : '')) + '">' +
+      esc(rd.prog) + '</span>';
+    else h += '<span class="rbadge prog">새 시리즈</span>';
+    h += '</div>';
+    return h;
   }
   function bookCard(b, kind){
     var d = b.date ? days(b.date) : null;
@@ -1886,13 +2000,18 @@ window.LibUI = { mount: function(DATA, OV){
       var p = String(Math.round(b.price));
       won = ' · ' + p.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '원';
     }
-    var done = isMonitored(b.t);
-    var btn = '<button class="sbtn mon' + (done ? ' done' : '') + '" data-mon="' + esc(b.t) + '"' +
-      (done ? ' disabled' : '') + '>' + (done ? '모니터링에 있음 ✓' : '+ 모니터링 추가') + '</button>';
+    var monName = monitoredSeries(b);
+    var btn = monName
+      ? '<button class="sbtn mon done" data-monjump="' + esc(monName) + '" title="누르면 시리즈 탭에서 이 시리즈를 보여 줍니다">✓ 모니터링 중</button>'
+      : '<button class="sbtn mon" data-mon="' + esc(bookKey(b)) + '">+ 모니터링 추가</button>';
+    var read = isBookRead(b);
+    btn += '<button class="sbtn rd' + (read ? ' done' : '') + '" data-rd="' + esc(bookKey(b)) + '">' +
+      (read ? '읽음 해제' : '읽음 표시') + '</button>';
     var ph = '<div class="bkc"><span class="bkph"><span class="big">📕</span>' + esc((b.pub || '표지').slice(0, 8)) + '</span>' +
       (b.cover ? '<img src="' + esc(b.cover) + '" alt="' + esc(b.t) + '" loading="lazy" onerror="this.remove()">' : '') + '</div>';
     return '<article class="bk">' + ph +
       '<div class="bki">' +
+        bookBadges(b) +
         '<div class="bkmeta">' + top + '</div>' +
         '<div class="bkt">' + esc(b.t) + '</div>' +
         '<div class="bks">' + (b.au ? '<b>' + esc(b.au) + '</b> · ' : '') + esc(b.pub) + won + '</div>' +
@@ -1913,12 +2032,26 @@ window.LibUI = { mount: function(DATA, OV){
     h += '</div>';
     return h;
   }
+  function bookFilterBar(list){
+    var unread = 0, cur = 0, i;
+    for(i = 0; i < list.length; i++){
+      if(!isBookRead(list[i])) unread++;
+      if(list[i].st) cur++;
+    }
+    var keys = [['all', '전체', list.length], ['unread', '안 읽은 책만', unread], ['cur', '대출·예약중', cur]];
+    return '<div class="bkf">' + keys.map(function(kv){
+      return '<button class="chipbtn' + (state.bkFilter === kv[0] ? ' on' : '') + '" data-bkf="' + kv[0] + '">' +
+        kv[1] + ' <b style="font-weight:800;opacity:.65">' + kv[2] + '</b></button>';
+    }).join('') + '</div>';
+  }
   function renderRecs(){
     var L = DATA.recs || [];
     var h = bookAsOfHtml('rec');
     h += '<div class="sec"><h2>⭐ 추천도서</h2><span class="n">' + L.length + '</span>' +
       '<span class="hint">' + esc(DATA.recsHint || '가족이 읽은 시리즈 기준') + '</span></div>';
     if(DATA.recsNoteHtml) h += '<div class="callout"><span class="ic">🧠</span><div>' + DATA.recsNoteHtml + '</div></div>';
+    if(DATA.booksHintHtml) h += '<div class="callout"><span class="ic">🏷️</span><div>' + DATA.booksHintHtml + '</div></div>';
+    h += bookFilterBar(L);
     h += '<div id="reclist"></div>';
     return h;
   }
@@ -1931,6 +2064,8 @@ window.LibUI = { mount: function(DATA, OV){
     h += '<div class="sec"><h2>🆕 신간안내</h2><span class="n">' + L.length + '</span>' +
       '<span class="hint">2026년 10~11월 · 예스24 분야 신상품</span></div>';
     if(DATA.newbNoteHtml) h += '<div class="callout"><span class="ic">🗓</span><div>' + DATA.newbNoteHtml + '</div></div>';
+    if(DATA.booksHintHtml) h += '<div class="callout"><span class="ic">🏷️</span><div>' + DATA.booksHintHtml + '</div></div>';
+    h += bookFilterBar(L);
     h += '<div id="newlist"></div>';
     return h;
   }
@@ -2208,11 +2343,19 @@ window.LibUI = { mount: function(DATA, OV){
     try{ document.documentElement.setAttribute('data-tab', state.tab); }catch(e){}
     bind();
   }
+  function bookFiltered(list){
+    return list.filter(function(b){
+      if(state.bkFilter === 'unread') return !isBookRead(b);
+      if(state.bkFilter === 'cur') return !!b.st;
+      return true;
+    });
+  }
   function fillBookList(boxId, list, kind){
     var box = document.getElementById(boxId);
     if(!box) return;
-    box.innerHTML = list.length ? '<div class="cardgrid">' + list.map(function(b){ return bookCard(b, kind); }).join('') + '</div>'
-      : '<div class="empty">표시할 책이 없습니다</div>';
+    var shown = bookFiltered(list);
+    box.innerHTML = shown.length ? '<div class="cardgrid">' + shown.map(function(b){ return bookCard(b, kind); }).join('') + '</div>'
+      : '<div class="empty">' + (list.length ? '이 조건에 맞는 책이 없습니다' : '표시할 책이 없습니다') + '</div>';
   }
   /* 달력 상자 안쪽만 다시 그렸을 때(repaintCalendar) 그 부분의 클릭·스와이프를 다시 결선한다 */
   function bindCalendar(){
@@ -2278,7 +2421,22 @@ window.LibUI = { mount: function(DATA, OV){
     }
     if(state.tab === 'recs' || state.tab === 'newb'){
       var mns = document.querySelectorAll('[data-mon]');
-      for(i=0;i<mns.length;i++) mns[i].addEventListener('click', function(){ addMonitor(this.getAttribute('data-mon'), '추천·신간에서 추가'); });
+      for(i=0;i<mns.length;i++) mns[i].addEventListener('click', function(){
+        var b = bookByKey(this.getAttribute('data-mon'));
+        addMonitor(b || this.getAttribute('data-mon'), '추천·신간에서 추가');
+      });
+      var mjs = document.querySelectorAll('[data-monjump]');
+      for(i=0;i<mjs.length;i++) mjs[i].addEventListener('click', function(){ jumpSeries(this.getAttribute('data-monjump')); });
+      var rds = document.querySelectorAll('[data-rd]');
+      for(i=0;i<rds.length;i++) rds[i].addEventListener('click', function(){
+        var b = bookByKey(this.getAttribute('data-rd'));
+        if(b) setBookRead(b, !isBookRead(b));
+      });
+      var bkfs = document.querySelectorAll('[data-bkf]');
+      for(i=0;i<bkfs.length;i++) bkfs[i].addEventListener('click', function(){
+        state.bkFilter = this.getAttribute('data-bkf');
+        render();
+      });
     }
     if(state.tab === 'loans'){
       var lb = document.querySelectorAll('[data-lib]');
@@ -2350,6 +2508,8 @@ window.LibUI = { mount: function(DATA, OV){
       DATA = d;
       custom = (o && o.added) ? o.added.slice() : [];
       excluded = (o && o.excluded) ? o.excluded.slice() : [];
+      readBooks = (o && o.readBooks) ? o.readBooks.slice() : [];
+      unreadBooks = (o && o.unreadBooks) ? o.unreadBooks.slice() : [];
       state.sel = {}; state.q = ''; state.limit = 24; state.selMode = false; state.addOpen = false;
       $('#asof').textContent = DATA.asOf;
       $('#fine').innerHTML = DATA.fine;
@@ -2443,6 +2603,7 @@ window.LibUI = { mount: function(DATA, OV){
   }
   function saveLocalOv(ov, dirty){
     lsSet(K_OV, JSON.stringify({excluded:ov.excluded || [], added:ov.added || [],
+                                readBooks:ov.readBooks || [], unreadBooks:ov.unreadBooks || [],
                                 dirty:!!dirty, at:new Date().toISOString()}));
   }
 
@@ -2516,7 +2677,8 @@ window.LibUI = { mount: function(DATA, OV){
   }
   var pushBusy = false, pushNext = null;
   function queuePush(ov){
-    pushNext = {excluded:ov.excluded.slice(), added:ov.added.slice()};
+    pushNext = {excluded:ov.excluded.slice(), added:ov.added.slice(),
+                readBooks:(ov.readBooks || []).slice(), unreadBooks:(ov.unreadBooks || []).slice()};
     if(!pushBusy) runPush();
   }
   function runPush(){
@@ -2524,7 +2686,8 @@ window.LibUI = { mount: function(DATA, OV){
     pushBusy = true;
     var ov = pushNext; pushNext = null;
     var env, content;
-    var body = {excluded:ov.excluded, added:ov.added, savedAt:new Date().toISOString()};
+    var body = {excluded:ov.excluded, added:ov.added, readBooks:ov.readBooks, unreadBooks:ov.unreadBooks,
+                savedAt:new Date().toISOString()};
     pill('저장 중…');
     syncState('저장 중…');
     encryptJson(body, S.pin).then(function(e){
@@ -2586,8 +2749,9 @@ window.LibUI = { mount: function(DATA, OV){
     pushNow: function(){
       if(!S.pin) return say('먼저 잠금을 풀어 주세요');
       if(!getPat()) return say('⚙️ 동기화 토큰을 먼저 등록해 주세요');
-      var ov = readLocalOv() || {excluded:[], added:[]};
-      queuePush({excluded:ov.excluded || [], added:ov.added || []});
+      var ov = readLocalOv() || {excluded:[], added:[], readBooks:[], unreadBooks:[]};
+      queuePush({excluded:ov.excluded || [], added:ov.added || [],
+                 readBooks:ov.readBooks || [], unreadBooks:ov.unreadBooks || []});
     }
   };
 
@@ -2623,12 +2787,15 @@ window.LibUI = { mount: function(DATA, OV){
       if(/HTTP/.test(String(err && err.message))) throw err;   /* 통신 오류는 그대로 */
       throw {wrongPin:true};
     }).then(function(){
-      var ov = {excluded:[], added:[]};
+      var ov = {excluded:[], added:[], readBooks:[], unreadBooks:[]};
       if(state.remote && state.remote.excluded) ov.excluded = state.remote.excluded.slice();
       if(state.remote && state.remote.added) ov.added = state.remote.added.slice();
+      if(state.remote && state.remote.readBooks) ov.readBooks = state.remote.readBooks.slice();
+      if(state.remote && state.remote.unreadBooks) ov.unreadBooks = state.remote.unreadBooks.slice();
       var local = readLocalOv();
       if(local && local.dirty){          /* 아직 못 올린 변경이 있으면 그것을 우선 */
-        ov = {excluded:local.excluded || [], added:local.added || []};
+        ov = {excluded:local.excluded || [], added:local.added || [],
+              readBooks:local.readBooks || [], unreadBooks:local.unreadBooks || []};
         S.retryPush = true;
       } else {
         saveLocalOv(ov, false);
@@ -2743,7 +2910,8 @@ window.LibUI = { mount: function(DATA, OV){
         syncState('토큰 확인됨 ✓ 이제 누르는 즉시 GitHub에 영구 저장됩니다');
         say('동기화 토큰 등록 완료 ✓');
         var ov = readLocalOv();
-        if(ov) queuePush({excluded:ov.excluded || [], added:ov.added || []});
+        if(ov) queuePush({excluded:ov.excluded || [], added:ov.added || [],
+                          readBooks:ov.readBooks || [], unreadBooks:ov.unreadBooks || []});
       })
       .catch(function(err){
         lsDel(K_PAT);
